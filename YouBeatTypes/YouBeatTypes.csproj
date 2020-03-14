@@ -61,7 +61,7 @@
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\launchpad-dot-net-master\launchpad-dot-net\launchpad-dot-net.csproj">
+    <ProjectReference Include="..\..\launchpad-dot-net\launchpad-dot-net\launchpad-dot-net.csproj">
       <Project>{2784c4af-3b96-471b-91b0-1a11c342d375}</Project>
       <Name>launchpad-dot-net</Name>
     </ProjectReference>
