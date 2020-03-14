@@ -1,0 +1,43 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 15
+VisualStudioVersion = 15.0.28307.779
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "launchpad test", "launchpad test\launchpad test.csproj", "{2F019F85-8357-4CED-8023-D0BBBF370A1F}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "launchpad-dot-net", "..\launchpad-dot-net-master\launchpad-dot-net\launchpad-dot-net.csproj", "{2784C4AF-3B96-471B-91B0-1A11C342D375}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "launchpad keyboard test", "launchpad keyboard test\launchpad keyboard test.csproj", "{F07D3BED-D4FC-4E13-9F8C-98C77F8E7903}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "YouBeatTypes", "YouBeatTypes\YouBeatTypes.csproj", "{B9DB3148-EC61-4402-9271-564CB0C78C44}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{2F019F85-8357-4CED-8023-D0BBBF370A1F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2F019F85-8357-4CED-8023-D0BBBF370A1F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2F019F85-8357-4CED-8023-D0BBBF370A1F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2F019F85-8357-4CED-8023-D0BBBF370A1F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{2784C4AF-3B96-471B-91B0-1A11C342D375}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2784C4AF-3B96-471B-91B0-1A11C342D375}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2784C4AF-3B96-471B-91B0-1A11C342D375}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2784C4AF-3B96-471B-91B0-1A11C342D375}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F07D3BED-D4FC-4E13-9F8C-98C77F8E7903}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F07D3BED-D4FC-4E13-9F8C-98C77F8E7903}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F07D3BED-D4FC-4E13-9F8C-98C77F8E7903}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F07D3BED-D4FC-4E13-9F8C-98C77F8E7903}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B9DB3148-EC61-4402-9271-564CB0C78C44}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B9DB3148-EC61-4402-9271-564CB0C78C44}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B9DB3148-EC61-4402-9271-564CB0C78C44}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B9DB3148-EC61-4402-9271-564CB0C78C44}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {44276DAC-74AA-4CE6-ABC6-7A3FC2FDDDB3}
+	EndGlobalSection
+EndGlobal

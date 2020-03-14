@@ -1,0 +1,274 @@
+﻿using LaunchpadNET;
+using Midi.Enums;
+using System;
+using System.Collections.Generic;
+using System.Diagnostics;
+using System.IO;
+using System.Linq;
+using System.Timers;
+using System.Xml.Serialization;
+using static LaunchpadNET.Interface;
+using Newtonsoft.Json;
+using NAudio.Wave;
+
+namespace YouBeatTypes {
+    public class GameController {
+        private string[] songManifests;
+        private List<Song> Songs = new List<Song>();
+        private AudioFileReader audioFile;
+        private WaveOutEvent outputDevice;
+
+        public Interface interf;
+        public int velo;
+
+        public const int ARROW_VELO = 37;
+        public const int ARROW_HELD_VELO = 57;
+        public const int CONFIRM_VELO = 21;
+
+        public Stopwatch GlobalStopwatch { get; set; }
+        public long Elapsed { get; set; }
+        public long Separation { get; set; }
+
+        public enum MenuKey { None, LeftArrow, RightArrow, Confim };
+        public enum GameState { Menu, Setup, Game, Pause, GameEnding, GameOver, Init };
+        public GameState state = GameState.Init;
+        public Dictionary<Tuple<int, int>, Pad> Pads = new Dictionary<Tuple<int, int>, Pad>();
+        public List<Beat> Beats = new List<Beat>();
+        
+        public Song CurrentSong { get; set; }
+        
+
+
+        private MenuKey keyInMenuObject(int x, int y) {
+            var leftArrow = new List<Pitch>() { Pitch.A5, Pitch.ASharp5, Pitch.B5, Pitch.C6, Pitch.CSharp6, Pitch.B4, Pitch.C5, Pitch.CSharp4 };
+            var rightArrow = new List<Pitch>() { Pitch.D0, Pitch.DSharp0, Pitch.E0, Pitch.F0, Pitch.FSharp0, Pitch.DSharp1, Pitch.E1, Pitch.D2 };
+            var confirm = new List<Pitch>() { Pitch.A1, Pitch.ASharp1, Pitch.B1, Pitch.C2,Pitch.G2, Pitch.GSharp2, Pitch.A2, Pitch.ASharp2,
+                                                   Pitch.F3, Pitch.FSharp3, Pitch.G3, Pitch.GSharp3, Pitch.DSharp4, Pitch.E4, Pitch.F4, Pitch.FSharp4};
+            var note = interf.ledToMidiNote(x, y);
+            if (leftArrow.Contains(note)) {
+                return MenuKey.LeftArrow;
+            } else if (rightArrow.Contains(note)) {
+                return MenuKey.RightArrow;
+            } else if (confirm.Contains(note)) {
+                return MenuKey.Confim;
+            }
+            return MenuKey.None;
+        }
+
+        private void changeMenuColour(int velo) {
+            interf.fillLEDs(0, 0, 7, 7, velo);
+            for (int i = 0; i < 8; i++) {
+                interf.setSideLED(i, velo);
+                interf.setTopLEDs(i, velo);
+            }
+            drawMenuKeys();
+        }
+
+        private void keyUp(object source, LaunchpadKeyEventArgs e) {
+            int x, y;
+            x = e.GetX(); y = e.GetY();
+            switch (state) {
+                case GameState.Menu:
+                    changeMenuColour(velo);
+                    break;
+                case GameState.Game:
+                    var pad = Pads[GetCoordFromButton(x, y)];
+                    pad.RegisterRelease();
+                    break;
+            }
+        }
+
+        private void keyDown(object sender, LaunchpadKeyEventArgs e) {
+            int x, y;
+            x = e.GetX(); y = e.GetY();
+            switch (state) {
+                case GameState.Menu:
+                    var menu = keyInMenuObject(x, y);
+                    switch (menu) {
+                        case MenuKey.LeftArrow:
+                            if (velo == 0) {
+                                velo = 127;
+                            } else {
+                                velo--;
+                            }
+                            changeMenuColour(velo);
+                            paintLArrowHeld();
+                            SetPrevSong();
+                            break;
+                        case MenuKey.RightArrow:
+                            if (velo == 127) {
+                                velo = 0;
+                            } else {
+                                velo++;
+                            }
+                            changeMenuColour(velo);
+                            paintRArrowHeld();                            
+                            SetNextSong();
+                            break;
+                        case MenuKey.Confim:
+                            state = GameState.Setup;
+                            break;
+                    }
+                    break;
+                case GameState.Game:
+                    var pad = Pads[GetCoordFromButton(x, y)];
+                    pad.RegisterHit();
+                    break;
+            }
+        }
+
+        private void SetPrevSong() {
+            var idx = Songs.IndexOf(CurrentSong);
+            if (idx == 0) {
+                idx = Songs.Count -1;
+            } else
+                idx--;
+            SetSong(Songs[idx]);
+        }
+
+        private void SetNextSong() {
+            var idx = Songs.IndexOf(CurrentSong);
+            if (idx == Songs.Count - 1) {
+                idx = 0;
+            } else
+                idx++;
+            SetSong(Songs[idx]);
+        }
+
+        private void paintRArrowHeld() {
+            //right arrow
+            interf.fillLEDs(7, 3, 7, 7, ARROW_HELD_VELO);
+            interf.fillLEDs(5, 7, 6, 7, ARROW_HELD_VELO);
+            interf.setLED(6, 6, ARROW_HELD_VELO);
+        }
+
+        private void paintLArrowHeld() {
+            //left arrow
+            interf.fillLEDs(0, 0, 0, 4, ARROW_HELD_VELO);
+            interf.fillLEDs(1, 0, 2, 0, ARROW_HELD_VELO);
+            interf.setLED(1, 1, ARROW_HELD_VELO);
+        }
+
+        private void drawMenuKeys() {
+            //left arrow
+            interf.fillLEDs(0, 0, 0, 4, ARROW_VELO);
+            interf.fillLEDs(1, 0, 2, 0, ARROW_VELO);
+            interf.setLED(1, 1, ARROW_VELO);
+            //right arrow
+            interf.fillLEDs(7, 3, 7, 7, ARROW_VELO);
+            interf.fillLEDs(5, 7, 6, 7, ARROW_VELO);
+            interf.setLED(6, 6, ARROW_VELO);
+            //confirm
+            interf.fillLEDs(2, 2, 5, 5, CONFIRM_VELO);
+        }
+        public List<Pitch> GetNotesFromButtons(List<Tuple<int, int>> buttons) {
+            List<Pitch> result = new List<Pitch>();
+            foreach (var coord in buttons) {
+                result.Add(interf.ledToMidiNote(coord.Item1, coord.Item2));
+            }
+            return result;
+        }
+        public List<Tuple<int, int>> GetButtonsFromCoord(Tuple<int, int> location) {
+            List<Tuple<int, int>> result = new List<Tuple<int, int>>() {
+                new Tuple<int, int>(location.Item1*2, location.Item2*2),
+                new Tuple<int, int>(location.Item1 * 2, (location.Item2*2)+1),
+                new Tuple<int, int>((location.Item1*2)+1, location.Item2*2),
+                new Tuple<int, int>((location.Item1*2)+1, (location.Item2*2)+1) };
+            return result;
+        }
+
+        public Tuple<int, int> GetCoordFromButton(int x, int y) {
+            return new Tuple<int, int>(x / 2, y / 2);
+        }
+
+        public GameController() {
+            interf = new Interface();
+            velo = 0;
+            var connected = interf.getConnectedLaunchpads();
+            if (connected.Count() > 0) {
+                if (interf.connect(connected[0])) {
+                    interf.OnLaunchpadKeyDown += keyDown;
+                    interf.OnLaunchpadKeyUp += keyUp;
+                    var note = interf.ledToMidiNote(2, 2);
+                    interf.clearAllLEDs();                    
+                    while (true) {
+                        switch (state) {
+                            case GameState.Init:
+                                songManifests = Directory.GetFiles($"Songs", "*.trk");
+                                foreach (var songFile in songManifests) {
+                                    var json = File.ReadAllText(songFile);
+                                    var song = JsonConvert.DeserializeObject<Song>(json);
+                                    Songs.Add(song);
+                                };
+                                SetSong(Songs.First());
+                                state = GameState.Menu;
+                                break;
+                            case GameState.Menu:
+                                drawMenuKeys();
+
+                                break;
+                            case GameState.Setup:
+                                interf.clearAllLEDs();
+                                Separation = 150;
+                                for (int x = 0; x < 4; x++) {
+                                    for (int y = 0; y < 4; y++) {
+                                        Pads.Add(new Tuple<int, int>(x, y), new Pad(new Tuple<int, int>(x, y), this));
+                                    }
+                                }
+                                var beatTest = new Beat(3000, 0, 0);
+                                var beatTest2 = new Beat(6000, 0, 0);
+                                Beats.Add(beatTest);
+                                Beats.Add(beatTest2);
+                                foreach (var coord in Pads.Keys) {
+                                    var pad = Pads[coord];
+                                    pad.UpcomingBeats = Beats.Where(b => b.x == coord.Item1 && b.y == coord.Item2).ToList<Beat>();
+                                }                                
+                                GlobalStopwatch = new Stopwatch();
+                                GlobalStopwatch.Start();
+                                state = GameState.Game;
+                                break;
+                            case GameState.Game:
+                                Elapsed = GlobalStopwatch.ElapsedMilliseconds;
+                                bool moreBeats = false;
+                                foreach(var pad in Pads.Values) {
+                                    moreBeats = moreBeats || pad.CheckBeats();
+                                }
+                                if (!moreBeats) {
+                                    state = GameState.GameEnding;
+                                }
+                                break;
+                            case GameState.GameEnding:
+                                state = GameState.GameOver;
+                                break;
+                            case GameState.GameOver:
+
+                                break;
+                        }
+                    }
+                }
+            }
+        }
+
+        private void SetSong(Song newSong) {
+            if (outputDevice != null) {
+                outputDevice.PlaybackStopped -= OutputDevice_PlaybackStopped; //don't fire the event if we're stopping ourselves.
+                outputDevice.Stop();
+                outputDevice.Dispose();
+            }
+            if(audioFile != null) {
+                audioFile.Dispose();
+            }
+            CurrentSong = newSong;
+            var path = Path.Combine(Directory.GetCurrentDirectory(), "Songs/Tracks", CurrentSong.FileName);
+            audioFile = new AudioFileReader(path);
+            outputDevice = new WaveOutEvent();
+            outputDevice.Init(audioFile);
+            outputDevice.Play();
+            outputDevice.PlaybackStopped += OutputDevice_PlaybackStopped;
+        }
+
+        private void OutputDevice_PlaybackStopped(object sender, StoppedEventArgs e) {
+            outputDevice.Play();
+        }
+    }
+}
