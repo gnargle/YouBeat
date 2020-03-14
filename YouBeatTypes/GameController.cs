@@ -11,12 +11,13 @@ using static LaunchpadNET.Interface;
 using Newtonsoft.Json;
 using NAudio.Wave;
 
-namespace YouBeatTypes {
+namespace YouBeatTypes {    
     public class GameController {
         private string[] songManifests;
         private List<Song> Songs = new List<Song>();
         private AudioFileReader audioFile;
         private WaveOutEvent outputDevice;
+        
 
         public Interface interf;
         public int velo;
@@ -27,18 +28,36 @@ namespace YouBeatTypes {
 
         public Stopwatch GlobalStopwatch { get; set; }
         public long Elapsed { get; set; }
-        public long Separation { get; set; }
-
-        public enum MenuKey { None, LeftArrow, RightArrow, Confim };
-        public enum GameState { Menu, Setup, Game, Pause, GameEnding, GameOver, Init };
+        public long Separation { get; set; }        
         public GameState state = GameState.Init;
         public Dictionary<Tuple<int, int>, Pad> Pads = new Dictionary<Tuple<int, int>, Pad>();
         public List<Beat> Beats = new List<Beat>();
         
         public Song CurrentSong { get; set; }
+        public long Score { get; set; }     
+        public long Combo { get; set; }
+        private object ComboLock = new object();
+        private object ScoreLock = new object();
+
+        public void AddToScore(long moreScore) {
+            lock (ScoreLock) {
+                Score += moreScore;
+            }
+        }
+
+        public void UpdateCombo (ComboChange change) {
+            lock (ComboLock) {
+                switch (change) {
+                    case ComboChange.Add:
+                        Combo++;
+                        break;
+                    case ComboChange.Break:
+                        Combo = 0;
+                        break;
+                }
+            }
+        }
         
-
-
         private MenuKey keyInMenuObject(int x, int y) {
             var leftArrow = new List<Pitch>() { Pitch.A5, Pitch.ASharp5, Pitch.B5, Pitch.C6, Pitch.CSharp6, Pitch.B4, Pitch.C5, Pitch.CSharp4 };
             var rightArrow = new List<Pitch>() { Pitch.D0, Pitch.DSharp0, Pitch.E0, Pitch.F0, Pitch.FSharp0, Pitch.DSharp1, Pitch.E1, Pitch.D2 };
@@ -181,6 +200,61 @@ namespace YouBeatTypes {
             return new Tuple<int, int>(x / 2, y / 2);
         }
 
+        public void MainLoop() {
+            switch (state) {
+                case GameState.Init:
+                    songManifests = Directory.GetFiles($"Songs", "*.trk");
+                    foreach (var songFile in songManifests) {
+                        var json = File.ReadAllText(songFile);
+                        var song = JsonConvert.DeserializeObject<Song>(json);
+                        Songs.Add(song);
+                    };
+                    SetSong(Songs.First());
+                    state = GameState.Menu;
+                    break;
+                case GameState.Menu:
+                    drawMenuKeys();
+
+                    break;
+                case GameState.Setup:
+                    interf.clearAllLEDs();
+                    Separation = 150;
+                    for (int x = 0; x < 4; x++) {
+                        for (int y = 0; y < 4; y++) {
+                            Pads.Add(new Tuple<int, int>(x, y), new Pad(new Tuple<int, int>(x, y), this));
+                        }
+                    }
+                    var beatTest = new Beat(3000, 0, 0);
+                    var beatTest2 = new Beat(6000, 0, 0);
+                    Beats.Add(beatTest);
+                    Beats.Add(beatTest2);
+                    foreach (var coord in Pads.Keys) {
+                        var pad = Pads[coord];
+                        pad.UpcomingBeats = Beats.Where(b => b.x == coord.Item1 && b.y == coord.Item2).ToList<Beat>();
+                    }
+                    GlobalStopwatch = new Stopwatch();
+                    GlobalStopwatch.Start();
+                    state = GameState.Game;
+                    break;
+                case GameState.Game:
+                    Elapsed = GlobalStopwatch.ElapsedMilliseconds;
+                    bool moreBeats = false;
+                    foreach (var pad in Pads.Values) {
+                        moreBeats = moreBeats || pad.CheckBeats();
+                    }
+                    if (!moreBeats) {
+                        state = GameState.GameEnding;
+                    }
+                    break;
+                case GameState.GameEnding:
+                    state = GameState.GameOver;
+                    break;
+                case GameState.GameOver:
+
+                    break;
+            }
+        }
+
         public GameController() {
             interf = new Interface();
             velo = 0;
@@ -190,61 +264,7 @@ namespace YouBeatTypes {
                     interf.OnLaunchpadKeyDown += keyDown;
                     interf.OnLaunchpadKeyUp += keyUp;
                     var note = interf.ledToMidiNote(2, 2);
-                    interf.clearAllLEDs();                    
-                    while (true) {
-                        switch (state) {
-                            case GameState.Init:
-                                songManifests = Directory.GetFiles($"Songs", "*.trk");
-                                foreach (var songFile in songManifests) {
-                                    var json = File.ReadAllText(songFile);
-                                    var song = JsonConvert.DeserializeObject<Song>(json);
-                                    Songs.Add(song);
-                                };
-                                SetSong(Songs.First());
-                                state = GameState.Menu;
-                                break;
-                            case GameState.Menu:
-                                drawMenuKeys();
-
-                                break;
-                            case GameState.Setup:
-                                interf.clearAllLEDs();
-                                Separation = 150;
-                                for (int x = 0; x < 4; x++) {
-                                    for (int y = 0; y < 4; y++) {
-                                        Pads.Add(new Tuple<int, int>(x, y), new Pad(new Tuple<int, int>(x, y), this));
-                                    }
-                                }
-                                var beatTest = new Beat(3000, 0, 0);
-                                var beatTest2 = new Beat(6000, 0, 0);
-                                Beats.Add(beatTest);
-                                Beats.Add(beatTest2);
-                                foreach (var coord in Pads.Keys) {
-                                    var pad = Pads[coord];
-                                    pad.UpcomingBeats = Beats.Where(b => b.x == coord.Item1 && b.y == coord.Item2).ToList<Beat>();
-                                }                                
-                                GlobalStopwatch = new Stopwatch();
-                                GlobalStopwatch.Start();
-                                state = GameState.Game;
-                                break;
-                            case GameState.Game:
-                                Elapsed = GlobalStopwatch.ElapsedMilliseconds;
-                                bool moreBeats = false;
-                                foreach(var pad in Pads.Values) {
-                                    moreBeats = moreBeats || pad.CheckBeats();
-                                }
-                                if (!moreBeats) {
-                                    state = GameState.GameEnding;
-                                }
-                                break;
-                            case GameState.GameEnding:
-                                state = GameState.GameOver;
-                                break;
-                            case GameState.GameOver:
-
-                                break;
-                        }
-                    }
+                    interf.clearAllLEDs();  
                 }
             }
         }

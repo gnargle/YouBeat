@@ -52,6 +52,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Beat.cs" />
+    <Compile Include="Enums.cs" />
     <Compile Include="GameController.cs" />
     <Compile Include="Pad.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

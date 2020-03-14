@@ -53,7 +53,27 @@ namespace YouBeatTypes
         }
 
         public void RegisterHit() {
+            _timer.Enabled = false;
+            var time = _controller.Elapsed;            
             LightPad(17);
+            if (CurrentBeat != null) {
+                var denom = (double)(CurrentBeat.HitTime - time)/(double)200;
+                if (denom == 0) denom = 1; //if you someone manage to match the note exactly, get the full amount
+                var dist = Convert.ToInt64(Math.Abs(2500/denom));
+                //this score system is still wrong, need to work out a proper algo
+                switch (_currentVelo) {
+                    case ScoreVelo.Bad:
+                    case ScoreVelo.OK:
+                        _controller.UpdateCombo(ComboChange.Break);
+                        break;
+                    default:
+                        _controller.UpdateCombo(ComboChange.Add);
+                        break;
+                }
+                _controller.AddToScore(dist);
+                PastBeats.Add(CurrentBeat);
+                CurrentBeat = null;
+            }            
             /*timer = new Timer(150);
             timer.Elapsed += Timer_Elapsed;
             timer.AutoReset = false;
