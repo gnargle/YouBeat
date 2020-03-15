@@ -30,7 +30,7 @@ namespace YouBeatTypes
             xmax = Buttons.Max(c => c.Item1);
             ymin = Buttons.Min(c => c.Item2);
             ymax = Buttons.Max(c => c.Item2);
-            _interf.fillLEDs(xmin, ymin, xmax, ymax, velo);
+            _interf.massUpdateLEDsRectangle(xmin, ymin, xmax, ymax, velo);
         }
 
         public Pad(Tuple<int, int> location, GameController controller) {

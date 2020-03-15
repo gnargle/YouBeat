@@ -178,7 +178,7 @@ namespace YouBeatTypes {
             interf.fillLEDs(5, 7, 6, 7, ARROW_VELO);
             interf.setLED(6, 6, ARROW_VELO);
             //confirm
-            interf.fillLEDs(2, 2, 5, 5, CONFIRM_VELO);
+            interf.massUpdateLEDsRectangle(2, 2, 5, 5, CONFIRM_VELO);
         }
         public List<Pitch> GetNotesFromButtons(List<Tuple<int, int>> buttons) {
             List<Pitch> result = new List<Pitch>();
