@@ -75,11 +75,7 @@ namespace YouBeatTypes {
         }
 
         private void changeMenuColour(int velo) {
-            interf.fillLEDs(0, 0, 7, 7, velo);
-            for (int i = 0; i < 8; i++) {
-                interf.setSideLED(i, velo);
-                interf.setTopLEDs(i, velo);
-            }
+            interf.massUpdateLEDsRectangle(0, 0, 8, 8, velo);
             drawMenuKeys();
         }
 
@@ -263,10 +259,20 @@ namespace YouBeatTypes {
                 if (interf.connect(connected[0])) {
                     interf.OnLaunchpadKeyDown += keyDown;
                     interf.OnLaunchpadKeyUp += keyUp;
+                    interf.OnLaunchpadCCKeyDown += ccKeyDown;
+                    interf.OnLaunchpadCCKeyUp += ccKeyUp;
                     var note = interf.ledToMidiNote(2, 2);
-                    interf.clearAllLEDs();  
+                    interf.clearAllLEDs();
                 }
             }
+        }
+
+        private void ccKeyUp(object source, LaunchpadCCKeyEventArgs e) {
+            
+        }
+
+        private void ccKeyDown(object source, LaunchpadCCKeyEventArgs e) {
+            
         }
 
         private void SetSong(Song newSong) {

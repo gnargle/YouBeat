@@ -41,7 +41,7 @@ namespace YouBeatTypes
             Notes = controller.GetNotesFromButtons(Buttons);
             _timer = new Timer(_controller.Separation);
             _timer.AutoReset = false;
-            _timer.Elapsed += Timer_Elapsed;
+            _timer.Elapsed += ScoreTimerElapsed;
         }
 
         private void ClearPad() {
@@ -73,11 +73,12 @@ namespace YouBeatTypes
                 _controller.AddToScore(dist);
                 PastBeats.Add(CurrentBeat);
                 CurrentBeat = null;
-            }            
-            /*timer = new Timer(150);
-            timer.Elapsed += Timer_Elapsed;
-            timer.AutoReset = false;
-            timer.Enabled = true;*/
+            }
+
+            _timer.Elapsed -= ScoreTimerElapsed;
+            _timer.Elapsed += NoteOffTimerElapsed;
+            _timer.AutoReset = false;
+            _timer.Enabled = true;
         }
 
         private void ResetTimer() {
@@ -85,7 +86,11 @@ namespace YouBeatTypes
             _timer.Enabled = true;
         }
 
-        private void Timer_Elapsed(object sender, ElapsedEventArgs e) {
+        private void NoteOffTimerElapsed(object sender, ElapsedEventArgs e) {
+            ClearPad();
+        }
+
+        private void ScoreTimerElapsed(object sender, ElapsedEventArgs e) {
             if (_timing == Timing.Early && CurrentBeat.HitTime < _controller.Elapsed)
                 _timing = Timing.Late;
             if (_timing == Timing.Early) {
