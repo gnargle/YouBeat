@@ -345,7 +345,7 @@ namespace YouBeatTypes {
         private void SetSong(Song newSong) {
             StopSong();
             CurrentSong = newSong;
-            interf.SetClock(CurrentSong.BPM);
+            interf.setClock(CurrentSong.BPM);
             var path = Path.Combine(Directory.GetCurrentDirectory(), "Songs/Tracks", CurrentSong.FileName);
             audioFile = new AudioFileReader(path);
             outputDevice = new WaveOutEvent();
