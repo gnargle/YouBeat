@@ -43,6 +43,8 @@ namespace YouBeatTypes {
         private object ComboLock = new object();
         private object ScoreLock = new object();
 
+        private Timer _leadInTimer;
+
         public void AddToScore(long moreScore) {
             lock (ScoreLock) {
                 Score += moreScore;
@@ -254,6 +256,7 @@ namespace YouBeatTypes {
 
                     break;
                 case GameState.Setup:
+                    StopSong();
                     interf.clearAllLEDs();
                     Separation = 250;
                     for (int x = 0; x < 4; x++) {
@@ -267,7 +270,12 @@ namespace YouBeatTypes {
                         pad.UpcomingBeats = Beats.Where(b => b.x == coord.Item1 && b.y == coord.Item2).ToList<Beat>();
                     }
                     GlobalStopwatch = new Stopwatch();
-                    GlobalStopwatch.Start();
+                    _leadInTimer = new Timer(5500) {
+                        AutoReset = false                        
+                    };
+                    _leadInTimer.Elapsed += _leadInTimer_Elapsed;
+                    _leadInTimer.Start();
+                    GlobalStopwatch.Start();                    
                     state = GameState.Game;
                     break;
                 case GameState.Game:
@@ -295,6 +303,10 @@ namespace YouBeatTypes {
             }
         }
 
+        private void _leadInTimer_Elapsed(object sender, ElapsedEventArgs e) {
+            SetSong(CurrentSong);
+        }
+
         public GameController() {
             interf = new Interface();
             velo = 0;
@@ -319,15 +331,19 @@ namespace YouBeatTypes {
             
         }
 
-        private void SetSong(Song newSong) {
+        private void StopSong() {
             if (outputDevice != null) {
                 outputDevice.PlaybackStopped -= OutputDevice_PlaybackStopped; //don't fire the event if we're stopping ourselves.
                 outputDevice.Stop();
                 outputDevice.Dispose();
             }
-            if(audioFile != null) {
+            if (audioFile != null) {
                 audioFile.Dispose();
             }
+        }
+
+        private void SetSong(Song newSong) {
+            StopSong();
             CurrentSong = newSong;
             interf.SetClock(CurrentSong.BPM);
             var path = Path.Combine(Directory.GetCurrentDirectory(), "Songs/Tracks", CurrentSong.FileName);
