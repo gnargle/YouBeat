@@ -11,6 +11,7 @@ namespace YouBeatTypes {
         public string Artist { get; set; }
         public string ImageFileName { get; set; }
         public string FileName { get; set; }
+        public int BPM { get; set; }
         public List<Beat> Beats { get; set; }
         public Song() {
 

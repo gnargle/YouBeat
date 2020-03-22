@@ -6,6 +6,7 @@ using System.Linq;
 using System.Text;
 using System.Timers;
 using System.Threading.Tasks;
+using System.Threading;
 
 namespace YouBeatTypes
 {
@@ -20,9 +21,18 @@ namespace YouBeatTypes
         public Beat CurrentBeat { get; set; }
         private Interface _interf;
         private GameController _controller;
-        private Timer _timer;
+        private System.Timers.Timer _timer;
         private Timing _timing;
         private ScoreVelo _currentVelo;
+
+        public void SetupBeat() {
+            CurrentBeat = UpcomingBeats.First();
+            UpcomingBeats.Remove(CurrentBeat);
+            _timing = Timing.Early;
+            _currentVelo = ScoreVelo.Bad;
+            LightPad((int)_currentVelo);
+            ResetTimer();
+        }
 
         public void LightPad(int velo) {
             int xmin, xmax, ymin, ymax;
@@ -30,7 +40,7 @@ namespace YouBeatTypes
             xmax = Buttons.Max(c => c.Item1);
             ymin = Buttons.Min(c => c.Item2);
             ymax = Buttons.Max(c => c.Item2);
-            _interf.massUpdateLEDsRectangle(xmin, ymin, xmax, ymax, velo);
+            _interf.massUpdateLEDsRectangle(xmin, ymin, xmax, ymax, velo, LightingMode.Pulse);
         }
 
         public Pad(Tuple<int, int> location, GameController controller) {
@@ -39,7 +49,7 @@ namespace YouBeatTypes
             _interf = controller.interf;
             Buttons = controller.GetButtonsFromCoord(Location);
             Notes = controller.GetNotesFromButtons(Buttons);
-            _timer = new Timer(_controller.Separation);
+            _timer = new System.Timers.Timer(_controller.Separation);
             _timer.AutoReset = false;
             _timer.Elapsed += ScoreTimerElapsed;
         }
@@ -57,9 +67,9 @@ namespace YouBeatTypes
             var time = _controller.Elapsed;            
             LightPad(17);
             if (CurrentBeat != null) {
-                var denom = (double)(CurrentBeat.HitTime - time)/(double)200;
+                var denom = CurrentBeat.HitTime - time;
                 if (denom == 0) denom = 1; //if you someone manage to match the note exactly, get the full amount
-                var dist = Convert.ToInt64(Math.Abs(2500/denom));
+                var score = Convert.ToInt64(Math.Abs(2500-denom*.01*(_controller.Separation * 5)));
                 //this score system is still wrong, need to work out a proper algo
                 switch (_currentVelo) {
                     case ScoreVelo.Bad:
@@ -70,7 +80,7 @@ namespace YouBeatTypes
                         _controller.UpdateCombo(ComboChange.Add);
                         break;
                 }
-                _controller.AddToScore(dist);
+                _controller.AddToScore(score);
                 PastBeats.Add(CurrentBeat);
                 CurrentBeat = null;
             }
@@ -148,6 +158,7 @@ namespace YouBeatTypes
                         _currentVelo = ScoreVelo.Miss;
                         ClearPad();
                         PastBeats.Add(CurrentBeat);
+                        _controller.UpdateCombo(ComboChange.Break);
                         CurrentBeat = null;
                         break;                    
                 }
@@ -161,13 +172,10 @@ namespace YouBeatTypes
                 return false;
             }
             if (UpcomingBeats.First().HitTime <= _controller.Elapsed + _controller.Separation * 5) {
-                CurrentBeat = UpcomingBeats.First();
-                UpcomingBeats.Remove(CurrentBeat);
-                _timing = Timing.Early;
-                _currentVelo = ScoreVelo.Bad;
-                LightPad((int)_currentVelo);
-                ResetTimer();
-            }
+                new Thread(delegate () {
+                    SetupBeat();
+                }).Start();
+            }            
             return true;
         }
     }

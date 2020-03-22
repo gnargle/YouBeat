@@ -17,7 +17,9 @@ namespace YouBeatTypes {
         private List<Song> Songs = new List<Song>();
         private AudioFileReader audioFile;
         private WaveOutEvent outputDevice;
-        
+
+        private bool _lArrowHeld = false;
+        private bool _rArrowHeld = false;        
 
         public Interface interf;
         public int velo;
@@ -36,6 +38,8 @@ namespace YouBeatTypes {
         public Song CurrentSong { get; set; }
         public long Score { get; set; }     
         public long Combo { get; set; }
+        public int CurrentComboVelo { get; set; } = 0;
+
         private object ComboLock = new object();
         private object ScoreLock = new object();
 
@@ -54,6 +58,27 @@ namespace YouBeatTypes {
                     case ComboChange.Break:
                         Combo = 0;
                         break;
+                }
+                if (Combo == 0) CurrentComboVelo = 0;
+                else {
+                    var veloDecider = Beats.Count / Combo;
+                    switch (veloDecider) {
+                        case 3:
+                            CurrentComboVelo = 19;
+                            break;
+                        case 2:
+                            CurrentComboVelo = 23;
+                            break;
+                        case 1:
+                            CurrentComboVelo = 22;
+                            break;
+                        case 0:
+                            CurrentComboVelo = 21;
+                            break;
+                        default:
+                            CurrentComboVelo = 0;
+                            break;
+                    }
                 }
             }
         }
@@ -84,7 +109,15 @@ namespace YouBeatTypes {
             x = e.GetX(); y = e.GetY();
             switch (state) {
                 case GameState.Menu:
-                    changeMenuColour(velo);
+                    var menu = keyInMenuObject(x, y);
+                    switch (menu) {
+                        case MenuKey.LeftArrow:
+                            _lArrowHeld = false;
+                            break;                            
+                        case MenuKey.RightArrow:
+                            _rArrowHeld = false;
+                            break;
+                    }
                     break;
                 case GameState.Game:
                     var pad = Pads[GetCoordFromButton(x, y)];
@@ -107,6 +140,7 @@ namespace YouBeatTypes {
                                 velo--;
                             }
                             changeMenuColour(velo);
+                            _lArrowHeld = true;
                             paintLArrowHeld();
                             SetPrevSong();
                             break;
@@ -117,6 +151,7 @@ namespace YouBeatTypes {
                                 velo++;
                             }
                             changeMenuColour(velo);
+                            _rArrowHeld = true;
                             paintRArrowHeld();                            
                             SetNextSong();
                             break;
@@ -151,28 +186,34 @@ namespace YouBeatTypes {
         }
 
         private void paintRArrowHeld() {
-            //right arrow
-            interf.fillLEDs(7, 3, 7, 7, ARROW_HELD_VELO);
-            interf.fillLEDs(5, 7, 6, 7, ARROW_HELD_VELO);
-            interf.setLED(6, 6, ARROW_HELD_VELO);
+            //right arrow  
+            List<int> xs = new List<int>() { 7, 7, 7, 7, 7, 6, 6, 5 };
+            List<int> ys = new List<int>() { 3, 4, 5, 6, 7, 6, 7, 7 };            
+            interf.massUpdateLEDs(xs, ys, ARROW_HELD_VELO, LightingMode.Pulse);
         }
 
         private void paintLArrowHeld() {
             //left arrow
-            interf.fillLEDs(0, 0, 0, 4, ARROW_HELD_VELO);
-            interf.fillLEDs(1, 0, 2, 0, ARROW_HELD_VELO);
-            interf.setLED(1, 1, ARROW_HELD_VELO);
+            List<int> xs = new List<int>() { 0, 0, 0, 0, 0, 1, 1, 2 };
+            List<int> ys = new List<int>() { 0, 1, 2, 3, 4, 0, 1, 0 };            
+            interf.massUpdateLEDs(xs, ys, ARROW_HELD_VELO, LightingMode.Pulse);
         }
 
         private void drawMenuKeys() {
             //left arrow
-            interf.fillLEDs(0, 0, 0, 4, ARROW_VELO);
-            interf.fillLEDs(1, 0, 2, 0, ARROW_VELO);
-            interf.setLED(1, 1, ARROW_VELO);
-            //right arrow
-            interf.fillLEDs(7, 3, 7, 7, ARROW_VELO);
-            interf.fillLEDs(5, 7, 6, 7, ARROW_VELO);
-            interf.setLED(6, 6, ARROW_VELO);
+            List<int> xs = new List<int>() { 0, 0, 0, 0, 0, 1, 1, 2 };
+            List<int> ys = new List<int>() { 0, 1, 2, 3, 4, 0, 1, 0 };            
+            if (_lArrowHeld)
+                interf.massUpdateLEDs(xs, ys, ARROW_HELD_VELO, LightingMode.Pulse);     
+            else
+                interf.massUpdateLEDs(xs, ys, ARROW_VELO, LightingMode.Pulse);
+            //right arrow      
+            xs = new List<int>() { 7, 7, 7, 7, 7, 6, 6, 5 }; 
+            ys = new List<int>() { 3, 4, 5, 6, 7, 6, 7, 7 };            
+            if (_rArrowHeld)
+                interf.massUpdateLEDs(xs, ys, ARROW_HELD_VELO, LightingMode.Pulse);
+            else
+                interf.massUpdateLEDs(xs, ys, ARROW_VELO, LightingMode.Pulse);
             //confirm
             interf.massUpdateLEDsRectangle(2, 2, 5, 5, CONFIRM_VELO, LightingMode.Pulse);
         }
@@ -214,16 +255,13 @@ namespace YouBeatTypes {
                     break;
                 case GameState.Setup:
                     interf.clearAllLEDs();
-                    Separation = 150;
+                    Separation = 250;
                     for (int x = 0; x < 4; x++) {
                         for (int y = 0; y < 4; y++) {
                             Pads.Add(new Tuple<int, int>(x, y), new Pad(new Tuple<int, int>(x, y), this));
                         }
                     }
-                    var beatTest = new Beat(3000, 0, 0);
-                    var beatTest2 = new Beat(6000, 0, 0);
-                    Beats.Add(beatTest);
-                    Beats.Add(beatTest2);
+                    Beats.AddRange(CurrentSong.Beats);
                     foreach (var coord in Pads.Keys) {
                         var pad = Pads[coord];
                         pad.UpcomingBeats = Beats.Where(b => b.x == coord.Item1 && b.y == coord.Item2).ToList<Beat>();
@@ -237,16 +275,22 @@ namespace YouBeatTypes {
                     bool moreBeats = false;
                     foreach (var pad in Pads.Values) {
                         moreBeats = moreBeats || pad.CheckBeats();
+                        if (pad.CurrentBeat == null) {
+                            pad.LightPad(CurrentComboVelo);
+                        }
                     }
                     if (!moreBeats) {
                         state = GameState.GameEnding;
                     }
                     break;
                 case GameState.GameEnding:
+                    foreach (var pad in Pads.Values)
+                        pad.LightPad(CurrentComboVelo);
                     state = GameState.GameOver;
                     break;
                 case GameState.GameOver:
-
+                    foreach (var pad in Pads.Values)
+                        pad.LightPad(CurrentComboVelo);
                     break;
             }
         }
@@ -285,6 +329,7 @@ namespace YouBeatTypes {
                 audioFile.Dispose();
             }
             CurrentSong = newSong;
+            interf.SetClock(CurrentSong.BPM);
             var path = Path.Combine(Directory.GetCurrentDirectory(), "Songs/Tracks", CurrentSong.FileName);
             audioFile = new AudioFileReader(path);
             outputDevice = new WaveOutEvent();
