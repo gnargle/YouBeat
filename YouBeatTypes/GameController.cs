@@ -273,8 +273,8 @@ namespace YouBeatTypes {
                 case GameState.Game:
                     Elapsed = GlobalStopwatch.ElapsedMilliseconds;
                     bool moreBeats = false;
-                    foreach (var pad in Pads.Values) {
-                        moreBeats = moreBeats || pad.CheckBeats();
+                    foreach (var pad in Pads.Values) {                        
+                        moreBeats = pad.CheckBeats() || moreBeats;
                         if (pad.CurrentBeat == null) {
                             pad.LightPad(CurrentComboVelo);
                         }
