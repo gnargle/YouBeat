@@ -31,6 +31,8 @@ namespace YouBeatTypes
             _timing = Timing.Early;
             _currentVelo = ScoreVelo.Bad;
             LightPad((int)_currentVelo);
+            _timer.Elapsed -= NoteOffTimerElapsed;
+            _timer.Elapsed += ScoreTimerElapsed;
             ResetTimer();
         }
 
@@ -50,8 +52,6 @@ namespace YouBeatTypes
             Buttons = controller.GetButtonsFromCoord(Location);
             Notes = controller.GetNotesFromButtons(Buttons);
             _timer = new System.Timers.Timer(_controller.Separation);
-            _timer.AutoReset = false;
-            _timer.Elapsed += ScoreTimerElapsed;
         }
 
         private void ClearPad() {
