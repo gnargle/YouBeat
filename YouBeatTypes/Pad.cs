@@ -92,7 +92,10 @@ namespace YouBeatTypes
         }
 
         private void ResetTimer() {
-            _timer.Interval = _controller.Separation;
+            if (_currentVelo == ScoreVelo.Perfect)
+                _timer.Interval = _controller.Separation / 2;
+            else
+                _timer.Interval = _controller.Separation;
             _timer.Enabled = true;
         }
 

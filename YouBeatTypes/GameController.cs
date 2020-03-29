@@ -69,13 +69,13 @@ namespace YouBeatTypes {
                             CurrentComboVelo = 19;
                             break;
                         case 2:
-                            CurrentComboVelo = 23;
+                            CurrentComboVelo = 43;
                             break;
                         case 1:
-                            CurrentComboVelo = 22;
+                            CurrentComboVelo = 59;
                             break;
                         case 0:
-                            CurrentComboVelo = 21;
+                            CurrentComboVelo = 72;
                             break;
                         default:
                             CurrentComboVelo = 0;
