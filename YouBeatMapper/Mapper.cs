@@ -6,6 +6,7 @@ using System.ComponentModel;
 using System.Data;
 using System.Drawing;
 using System.IO;
+using System.IO.Compression;
 using System.Linq;
 using System.Media;
 using System.Text;
@@ -20,12 +21,14 @@ namespace YouBeatMapper {
         private WaveOut wvOut;
 
         private string SongFolder;
+        private string SongFile;
+        private string AudioFileName;
+        private string ImageFileName;
 
         private bool closing = false;
 
         public Mapper() {
             InitializeComponent();
-            fileDialogSongLoad.InitialDirectory = Directory.GetCurrentDirectory();
             this.FormClosing += buttonStop_Click;
         }
 
@@ -33,11 +36,25 @@ namespace YouBeatMapper {
 
         private void loadSongToolStripMenuItem_Click(object sender, EventArgs e) {
             if (fileDialogSongLoad.ShowDialog() == DialogResult.OK) {
-                SongFolder = Path.GetDirectoryName(fileDialogSongLoad.FileName);
-                var file = fileDialogSongLoad.FileName;
+                SongFile = fileDialogSongLoad.FileName;
+                SongFolder = Path.Combine(Path.GetDirectoryName(SongFile), Path.GetFileNameWithoutExtension(SongFile));
+                Directory.Delete(SongFolder, true);
+                ZipFile.ExtractToDirectory(SongFile, SongFolder);
+                foreach (var tempFile in Directory.GetFiles(SongFolder))
+                {
+                    if (tempFile.EndsWith(".js"))
+                        continue;
+                    else if (tempFile.EndsWith(".jpg") || tempFile.EndsWith(".png", StringComparison.InvariantCultureIgnoreCase))
+                        ImageFileName = tempFile;
+                    else
+                        AudioFileName = tempFile;
+                }
+                //var zip = ZipFile.OpenRead(SongFile);
+                var file = Path.Combine(SongFolder, Path.GetFileNameWithoutExtension(fileDialogSongLoad.FileName) + ".js");
                 var json = File.ReadAllText(file);
                 CurrentSong = JsonConvert.DeserializeObject<Song>(json);
-                audioFile = new MediaFoundationReader(Path.Combine(SongFolder, "Tracks", CurrentSong.FileName));
+                pgCurrentSong.SelectedObject = CurrentSong;
+                audioFile = new MediaFoundationReader(AudioFileName);
                 wvOut = new WaveOut();
                 wvOut.PlaybackStopped += OnPlaybackStopped;
                 wvOut.Init(audioFile);
@@ -128,7 +145,10 @@ namespace YouBeatMapper {
 
         private void newSongToolStripMenuItem_Click(object sender, EventArgs e) {
             if (fileDialogNewSong.ShowDialog() == DialogResult.OK) {
-                SongFolder = Path.GetDirectoryName(fileDialogNewSong.FileName);
+                SongFile = String.Empty;
+                SongFolder = Path.Combine(Path.GetDirectoryName(fileDialogNewSong.FileName), Path.GetFileNameWithoutExtension(fileDialogNewSong.FileName));
+                Directory.CreateDirectory(SongFolder);
+                File.Copy(fileDialogNewSong.FileName, Path.Combine(SongFolder, Path.GetFileName(fileDialogNewSong.FileName)), true);//drop audio into folder for later
                 var tfile = TagLib.File.Create(fileDialogNewSong.FileName);
                 CurrentSong = new Song() {
                     FileName = Path.GetFileName(fileDialogNewSong.FileName),
@@ -137,7 +157,8 @@ namespace YouBeatMapper {
                     Artist = tfile.Tag.FirstPerformer,
                     BPM = (int)tfile.Tag.BeatsPerMinute,                  
                 };
-                audioFile = new MediaFoundationReader(fileDialogNewSong.FileName);
+                pgCurrentSong.SelectedObject = CurrentSong;
+                audioFile = new MediaFoundationReader(Path.Combine(SongFolder, Path.GetFileName(fileDialogNewSong.FileName)));
                 wvOut = new WaveOut();
                 wvOut.PlaybackStopped += OnPlaybackStopped;
                 wvOut.Init(audioFile);
@@ -155,6 +176,39 @@ namespace YouBeatMapper {
             } else {
                 var newBeat = new Beat(currTime, coords.Column, coords.Row);
                 CurrentSong.Beats.Add(newBeat);
+            }
+        }
+
+        private void saveSong()
+        {
+            var json = JsonConvert.SerializeObject(CurrentSong);
+            File.WriteAllText(Path.Combine(SongFolder, $"{Path.GetFileNameWithoutExtension(SongFile)}.js"), json);
+            File.Delete(SongFile);
+            ZipFile.CreateFromDirectory(SongFolder, SongFile);
+        }
+
+        private void saveAsToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            if (CurrentSong != null)
+            {
+                if (saveFileDialog1.ShowDialog() == DialogResult.OK)
+                {
+                    SongFile = saveFileDialog1.FileName;
+                    saveSong();
+                }
+            } else
+            {
+                MessageBox.Show("Please create or load a song before saving.");
+            }
+        }
+
+        private void saveToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            if (String.IsNullOrWhiteSpace(SongFile))
+                saveAsToolStripMenuItem_Click(sender, e);
+            else if (CurrentSong != null)
+            {
+                saveSong();
             }
         }
     }

@@ -48,11 +48,14 @@
             this.b00 = new System.Windows.Forms.Button();
             this.panel17 = new System.Windows.Forms.Panel();
             this.trackBar1 = new System.Windows.Forms.TrackBar();
-            this.waveViewer1 = new NAudio.Gui.WaveViewer();
             this.buttonStop = new System.Windows.Forms.Button();
             this.buttonPlay = new System.Windows.Forms.Button();
             this.timer1 = new System.Windows.Forms.Timer(this.components);
             this.fileDialogNewSong = new System.Windows.Forms.OpenFileDialog();
+            this.pgCurrentSong = new System.Windows.Forms.PropertyGrid();
+            this.saveAsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.saveToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.saveFileDialog1 = new System.Windows.Forms.SaveFileDialog();
             this.menuStrip1.SuspendLayout();
             this.tableLayoutPanel1.SuspendLayout();
             this.panel17.SuspendLayout();
@@ -73,7 +76,9 @@
             // 
             this.fileToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.newSongToolStripMenuItem,
-            this.loadSongToolStripMenuItem});
+            this.loadSongToolStripMenuItem,
+            this.saveAsToolStripMenuItem,
+            this.saveToolStripMenuItem});
             this.fileToolStripMenuItem.Name = "fileToolStripMenuItem";
             this.fileToolStripMenuItem.Size = new System.Drawing.Size(37, 20);
             this.fileToolStripMenuItem.Text = "File";
@@ -94,7 +99,7 @@
             // 
             // fileDialogSongLoad
             // 
-            this.fileDialogSongLoad.Filter = "Track Files|*.trk|All files|*.*";
+            this.fileDialogSongLoad.Filter = "Track Files|*.trk";
             this.fileDialogSongLoad.Title = "Load Song";
             // 
             // tableLayoutPanel1
@@ -310,7 +315,6 @@
             // 
             this.panel17.BackColor = System.Drawing.SystemColors.Control;
             this.panel17.Controls.Add(this.trackBar1);
-            this.panel17.Controls.Add(this.waveViewer1);
             this.panel17.Controls.Add(this.buttonStop);
             this.panel17.Controls.Add(this.buttonPlay);
             this.panel17.Dock = System.Windows.Forms.DockStyle.Top;
@@ -321,23 +325,14 @@
             // 
             // trackBar1
             // 
+            this.trackBar1.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
             this.trackBar1.Location = new System.Drawing.Point(134, 3);
             this.trackBar1.Maximum = 1000;
             this.trackBar1.Name = "trackBar1";
             this.trackBar1.Size = new System.Drawing.Size(1097, 45);
             this.trackBar1.TabIndex = 3;
             this.trackBar1.Scroll += new System.EventHandler(this.trackBar1_Scroll);
-            // 
-            // waveViewer1
-            // 
-            this.waveViewer1.Dock = System.Windows.Forms.DockStyle.Left;
-            this.waveViewer1.Location = new System.Drawing.Point(128, 0);
-            this.waveViewer1.Name = "waveViewer1";
-            this.waveViewer1.SamplesPerPixel = 128;
-            this.waveViewer1.Size = new System.Drawing.Size(1097, 64);
-            this.waveViewer1.StartPosition = ((long)(0));
-            this.waveViewer1.TabIndex = 2;
-            this.waveViewer1.WaveStream = null;
             // 
             // buttonStop
             // 
@@ -370,6 +365,33 @@
             // fileDialogNewSong
             // 
             this.fileDialogNewSong.Filter = "Music files|*.mp3";
+            this.fileDialogNewSong.Title = "Select a track...";
+            // 
+            // pgCurrentSong
+            // 
+            this.pgCurrentSong.Location = new System.Drawing.Point(927, 389);
+            this.pgCurrentSong.Name = "pgCurrentSong";
+            this.pgCurrentSong.Size = new System.Drawing.Size(316, 282);
+            this.pgCurrentSong.TabIndex = 3;
+            // 
+            // saveAsToolStripMenuItem
+            // 
+            this.saveAsToolStripMenuItem.Name = "saveAsToolStripMenuItem";
+            this.saveAsToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            this.saveAsToolStripMenuItem.Text = "Save As...";
+            this.saveAsToolStripMenuItem.Click += new System.EventHandler(this.saveAsToolStripMenuItem_Click);
+            // 
+            // saveToolStripMenuItem
+            // 
+            this.saveToolStripMenuItem.Name = "saveToolStripMenuItem";
+            this.saveToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            this.saveToolStripMenuItem.Text = "Save";
+            this.saveToolStripMenuItem.Click += new System.EventHandler(this.saveToolStripMenuItem_Click);
+            // 
+            // saveFileDialog1
+            // 
+            this.saveFileDialog1.Filter = "Track Files|*.trk";
+            this.saveFileDialog1.Title = "Save song...";
             // 
             // Mapper
             // 
@@ -377,6 +399,7 @@
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.BackColor = System.Drawing.SystemColors.ControlDark;
             this.ClientSize = new System.Drawing.Size(1243, 683);
+            this.Controls.Add(this.pgCurrentSong);
             this.Controls.Add(this.tableLayoutPanel1);
             this.Controls.Add(this.panel17);
             this.Controls.Add(this.menuStrip1);
@@ -405,7 +428,6 @@
         private System.Windows.Forms.Panel panel17;
         private System.Windows.Forms.Button buttonStop;
         private System.Windows.Forms.Button buttonPlay;
-        private NAudio.Gui.WaveViewer waveViewer1;
         private System.Windows.Forms.Button b3;
         private System.Windows.Forms.Button b23;
         private System.Windows.Forms.Button b13;
@@ -425,6 +447,10 @@
         private System.Windows.Forms.Timer timer1;
         private System.Windows.Forms.TrackBar trackBar1;
         private System.Windows.Forms.OpenFileDialog fileDialogNewSong;
+        private System.Windows.Forms.PropertyGrid pgCurrentSong;
+        private System.Windows.Forms.ToolStripMenuItem saveAsToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem saveToolStripMenuItem;
+        private System.Windows.Forms.SaveFileDialog saveFileDialog1;
     }
 }
 
