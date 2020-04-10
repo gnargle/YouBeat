@@ -13,6 +13,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using YouBeatTypes;
+using LaunchpadNET;
 
 namespace YouBeatMapper {
     public partial class Mapper : Form {
@@ -25,11 +26,13 @@ namespace YouBeatMapper {
         private string AudioFileName;
         private string ImageFileName;
 
-        private bool closing = false;
+        private bool closing = false;       
+        private MapperLPInterf launchpad;
 
         public Mapper() {
             InitializeComponent();
             this.FormClosing += buttonStop_Click;
+            launchpad = new MapperLPInterf(); 
         }
 
         public Song CurrentSong { get; private set; }
@@ -38,7 +41,8 @@ namespace YouBeatMapper {
             if (fileDialogSongLoad.ShowDialog() == DialogResult.OK) {
                 SongFile = fileDialogSongLoad.FileName;
                 SongFolder = Path.Combine(Path.GetDirectoryName(SongFile), Path.GetFileNameWithoutExtension(SongFile));
-                Directory.Delete(SongFolder, true);
+                if (Directory.Exists(SongFolder))
+                    Directory.Delete(SongFolder, true);
                 ZipFile.ExtractToDirectory(SongFile, SongFolder);
                 foreach (var tempFile in Directory.GetFiles(SongFolder))
                 {
@@ -58,6 +62,9 @@ namespace YouBeatMapper {
                 wvOut = new WaveOut();
                 wvOut.PlaybackStopped += OnPlaybackStopped;
                 wvOut.Init(audioFile);
+                launchpad.audioFile = audioFile;
+                launchpad.wvOut = wvOut;
+                launchpad.CurrentSong = CurrentSong;
                 trackBar1.Value = 0;
                 timer1.Enabled = true;
             }
@@ -132,6 +139,7 @@ namespace YouBeatMapper {
                 UpdatePosition();
             }
             UpdateGrid();
+            launchpad.UpdatePads();
         }
 
         private void trackBar1_Scroll(object sender, EventArgs e)
@@ -155,27 +163,33 @@ namespace YouBeatMapper {
                     Beats = new List<Beat>(),
                     Title = tfile.Tag.Title,
                     Artist = tfile.Tag.FirstPerformer,
-                    BPM = (int)tfile.Tag.BeatsPerMinute,                  
+                    BPM = (int)tfile.Tag.BeatsPerMinute,    
+                    SongName = Path.GetFileNameWithoutExtension(fileDialogNewSong.FileName)
                 };
                 pgCurrentSong.SelectedObject = CurrentSong;
                 audioFile = new MediaFoundationReader(Path.Combine(SongFolder, Path.GetFileName(fileDialogNewSong.FileName)));
                 wvOut = new WaveOut();
                 wvOut.PlaybackStopped += OnPlaybackStopped;
                 wvOut.Init(audioFile);
+                launchpad.audioFile = audioFile;
+                launchpad.wvOut = wvOut;
+                launchpad.CurrentSong = CurrentSong;
                 timer1.Enabled = true;
                 trackBar1.Value = 0;
             }
         }
 
         private void buttonClick(object sender, EventArgs e) {
-            var currTime = Convert.ToInt64(audioFile.CurrentTime.TotalMilliseconds);
-            var coords = tableLayoutPanel1.GetPositionFromControl((Control)sender);
-            var existingBeat = CurrentSong.Beats.Where(b => (b.HitTime <= currTime + 125) && (b.HitTime >= currTime - 125) && b.x == coords.Column && b.y == coords.Row).FirstOrDefault();
-            if (existingBeat != null) {
-                CurrentSong.Beats.Remove(existingBeat);
-            } else {
-                var newBeat = new Beat(currTime, coords.Column, coords.Row);
-                CurrentSong.Beats.Add(newBeat);
+            if (CurrentSong != null) {
+                var currTime = Convert.ToInt64(audioFile.CurrentTime.TotalMilliseconds);
+                var coords = tableLayoutPanel1.GetPositionFromControl((Control)sender);
+                var existingBeat = CurrentSong.Beats.Where(b => (b.HitTime <= currTime + 125) && (b.HitTime >= currTime - 125) && b.x == coords.Column && b.y == coords.Row).FirstOrDefault();
+                if (existingBeat != null) {
+                    CurrentSong.Beats.Remove(existingBeat);
+                } else {
+                    var newBeat = new Beat(currTime, coords.Column, coords.Row);
+                    CurrentSong.Beats.Add(newBeat);
+                }
             }
         }
 

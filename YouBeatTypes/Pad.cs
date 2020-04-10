@@ -19,6 +19,8 @@ namespace YouBeatTypes
         public List<Beat> UpcomingBeats { get; set; }
         public List<Beat> PastBeats { get; set; } = new List<Beat>();
         public Beat CurrentBeat { get; set; }
+        public int MapperVelo { get; set; }
+        public bool MapperPressed { get; set; } = false;
         private Interface _interf;
         private GameController _controller;
         private System.Timers.Timer _timer;
@@ -49,6 +51,15 @@ namespace YouBeatTypes
             Location = location;
             _controller = controller;
             _interf = controller.interf;
+            Buttons = controller.GetButtonsFromCoord(Location);
+            Notes = controller.GetNotesFromButtons(Buttons);
+            _timer = new System.Timers.Timer(_controller.Separation);
+        }
+
+        public Pad(Tuple<int, int> location, GameController controller, Interface interf) {
+            Location = location;
+            _controller = controller;
+            _interf = interf;
             Buttons = controller.GetButtonsFromCoord(Location);
             Notes = controller.GetNotesFromButtons(Buttons);
             _timer = new System.Timers.Timer(_controller.Separation);
@@ -104,68 +115,70 @@ namespace YouBeatTypes
         }
 
         private void ScoreTimerElapsed(object sender, ElapsedEventArgs e) {
-            if (_timing == Timing.Early && CurrentBeat.HitTime < _controller.Elapsed)
-                _timing = Timing.Late;
-            if (_timing == Timing.Early) {
-                switch (_currentVelo) {
-                    case ScoreVelo.Bad:
-                        _currentVelo = ScoreVelo.OK;
-                        LightPad((int)_currentVelo);
-                        ResetTimer();
-                        break;
-                    case ScoreVelo.OK:
-                        _currentVelo = ScoreVelo.Good;
-                        LightPad((int)_currentVelo);
-                        ResetTimer();
-                        break;
-                    case ScoreVelo.Good:
-                        _currentVelo = ScoreVelo.Great;
-                        LightPad((int)_currentVelo);
-                        ResetTimer();
-                        break;
-                    case ScoreVelo.Great:
-                        _currentVelo = ScoreVelo.Perfect;
-                        LightPad((int)_currentVelo);
-                        ResetTimer();
-                        break;
-                    case ScoreVelo.Perfect:
-                        LightPad((int)_currentVelo);
-                        ResetTimer();
-                        break;
-                }
-            } else {
-                switch (_currentVelo) {
-                    case ScoreVelo.Perfect:
-                        if (_controller.Elapsed > CurrentBeat.HitTime + _controller.Separation) {
+            if (CurrentBeat != null) {
+                if (_timing == Timing.Early && CurrentBeat.HitTime < _controller.Elapsed)
+                    _timing = Timing.Late;
+                if (_timing == Timing.Early) {
+                    switch (_currentVelo) {
+                        case ScoreVelo.Bad:
+                            _currentVelo = ScoreVelo.OK;
+                            LightPad((int)_currentVelo);
+                            ResetTimer();
+                            break;
+                        case ScoreVelo.OK:
+                            _currentVelo = ScoreVelo.Good;
+                            LightPad((int)_currentVelo);
+                            ResetTimer();
+                            break;
+                        case ScoreVelo.Good:
                             _currentVelo = ScoreVelo.Great;
-                            LightPad((int)_currentVelo);                            
-                        }
-                        ResetTimer();
-                        break;
-                    case ScoreVelo.Great:
-                        _currentVelo = ScoreVelo.Good;
-                        LightPad((int)_currentVelo);
-                        ResetTimer();
-                        break;
-                    case ScoreVelo.Good:
-                        _currentVelo = ScoreVelo.OK;
-                        LightPad((int)_currentVelo);
-                        ResetTimer();
-                        break;
-                    case ScoreVelo.OK:
-                        _currentVelo = ScoreVelo.Bad;
-                        LightPad((int)_currentVelo);
-                        ResetTimer();
-                        break;
-                    case ScoreVelo.Bad:
-                        _currentVelo = ScoreVelo.Miss;
-                        ClearPad();
-                        PastBeats.Add(CurrentBeat);
-                        _controller.UpdateCombo(ComboChange.Break);
-                        CurrentBeat = null;
-                        break;                    
+                            LightPad((int)_currentVelo);
+                            ResetTimer();
+                            break;
+                        case ScoreVelo.Great:
+                            _currentVelo = ScoreVelo.Perfect;
+                            LightPad((int)_currentVelo);
+                            ResetTimer();
+                            break;
+                        case ScoreVelo.Perfect:
+                            LightPad((int)_currentVelo);
+                            ResetTimer();
+                            break;
+                    }
+                } else {
+                    switch (_currentVelo) {
+                        case ScoreVelo.Perfect:
+                            if (_controller.Elapsed > CurrentBeat.HitTime + _controller.Separation) {
+                                _currentVelo = ScoreVelo.Great;
+                                LightPad((int)_currentVelo);
+                            }
+                            ResetTimer();
+                            break;
+                        case ScoreVelo.Great:
+                            _currentVelo = ScoreVelo.Good;
+                            LightPad((int)_currentVelo);
+                            ResetTimer();
+                            break;
+                        case ScoreVelo.Good:
+                            _currentVelo = ScoreVelo.OK;
+                            LightPad((int)_currentVelo);
+                            ResetTimer();
+                            break;
+                        case ScoreVelo.OK:
+                            _currentVelo = ScoreVelo.Bad;
+                            LightPad((int)_currentVelo);
+                            ResetTimer();
+                            break;
+                        case ScoreVelo.Bad:
+                            _currentVelo = ScoreVelo.Miss;
+                            ClearPad();
+                            PastBeats.Add(CurrentBeat);
+                            _controller.UpdateCombo(ComboChange.Break);
+                            CurrentBeat = null;
+                            break;
+                    }
                 }
-            }  
+            }
         }
 
         public bool CheckBeats() {
@@ -174,7 +187,7 @@ namespace YouBeatTypes
             } else if (UpcomingBeats == null || !UpcomingBeats.Any()) {
                 return false;
             }
-            if (UpcomingBeats.First().HitTime <= _controller.Elapsed + _controller.Separation * 5) {
+            if ((_controller.Elapsed > 0)  && (UpcomingBeats.First().HitTime <= _controller.Elapsed + _controller.Separation * 5)) {
                 new Thread(delegate () {
                     SetupBeat();
                 }).Start();

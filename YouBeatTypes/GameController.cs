@@ -6,6 +6,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Timers;
+using System.IO.Compression;
 using System.Xml.Serialization;
 using static LaunchpadNET.Interface;
 using Newtonsoft.Json;
@@ -15,7 +16,7 @@ namespace YouBeatTypes {
     public class GameController {
         private string[] songManifests;
         private List<Song> Songs = new List<Song>();
-        private AudioFileReader audioFile;
+        private MediaFoundationReader audioFile;
         private WaveOutEvent outputDevice;
 
         private bool _lArrowHeld = false;
@@ -242,7 +243,7 @@ namespace YouBeatTypes {
         public void MainLoop() {
             switch (state) {
                 case GameState.Init:
-                    songManifests = Directory.GetFiles($"Songs", "*.trk");
+                    songManifests = Directory.GetFiles($"Songs", "*.js");
                     foreach (var songFile in songManifests) {
                         var json = File.ReadAllText(songFile);
                         var song = JsonConvert.DeserializeObject<Song>(json);
@@ -258,12 +259,7 @@ namespace YouBeatTypes {
                 case GameState.Setup:
                     StopSong();
                     interf.clearAllLEDs();
-                    Separation = 250;
-                    for (int x = 0; x < 4; x++) {
-                        for (int y = 0; y < 4; y++) {
-                            Pads.Add(new Tuple<int, int>(x, y), new Pad(new Tuple<int, int>(x, y), this));
-                        }
-                    }
+                    CreatePads();
                     Beats.AddRange(CurrentSong.Beats);
                     foreach (var coord in Pads.Keys) {
                         var pad = Pads[coord];
@@ -279,7 +275,10 @@ namespace YouBeatTypes {
                     state = GameState.Game;
                     break;
                 case GameState.Game:
-                    Elapsed = GlobalStopwatch.ElapsedMilliseconds;
+                    if (audioFile == null || audioFile.CurrentTime == null)
+                        Elapsed = 0;
+                    else
+                        Elapsed = Convert.ToInt64(audioFile.CurrentTime.TotalMilliseconds);
                     bool moreBeats = false;
                     foreach (var pad in Pads.Values) {                        
                         moreBeats = pad.CheckBeats() || moreBeats;
@@ -307,21 +306,46 @@ namespace YouBeatTypes {
             SetSong(CurrentSong);
         }
 
-        public GameController() {
-            interf = new Interface();
-            velo = 0;
-            var connected = interf.getConnectedLaunchpads();
-            if (connected.Count() > 0) {
-                if (interf.connect(connected[0])) {
-                    interf.OnLaunchpadKeyDown += keyDown;
-                    interf.OnLaunchpadKeyUp += keyUp;
-                    interf.OnLaunchpadCCKeyDown += ccKeyDown;
-                    interf.OnLaunchpadCCKeyUp += ccKeyUp;
-                    var note = interf.ledToMidiNote(2, 2);
-                    interf.clearAllLEDs();
+        public void CreatePads() {
+            int velo = 33;
+            for (int x = 0; x < 4; x++) {
+                for (int y = 0; y < 4; y++) {
+                    var pad = new Pad(new Tuple<int, int>(x, y), this);
+                    Pads.Add(new Tuple<int, int>(x, y), pad);
+                    pad.MapperVelo = velo;
+                    velo += 3;
                 }
             }
         }
+
+        public GameController(bool FromMapper = false) {
+            interf = new Interface();
+            velo = 0;
+            Separation = 250;
+            if (!FromMapper) { //if we're created from the mapper, the mapper is managing the launchpad interface.
+                var connected = interf.getConnectedLaunchpads();
+                if (connected.Count() > 0) {
+                    if (interf.connect(connected[0])) {
+                        interf.OnLaunchpadKeyDown += keyDown;
+                        interf.OnLaunchpadKeyUp += keyUp;
+                        interf.OnLaunchpadCCKeyDown += ccKeyDown;
+                        interf.OnLaunchpadCCKeyUp += ccKeyUp;
+                        interf.clearAllLEDs();
+                    }
+                }
+                songManifests = Directory.GetFiles($"Songs", "*.trk");
+                foreach (var SongFile in songManifests) {
+                    var SongName = Path.GetFileNameWithoutExtension(SongFile);
+                    var SongFolder = Path.Combine(Path.GetDirectoryName(SongFile), SongName);
+                    if (Directory.Exists(SongFolder))
+                        Directory.Delete(SongFolder, true);
+                    ZipFile.ExtractToDirectory(SongFile, SongFolder);
+                    var json = File.ReadAllText($@"{SongFolder}\{SongName}.js");
+                    var song = JsonConvert.DeserializeObject<Song>(json);
+                    Songs.Add(song);
+                };
+            }            
+        }        
 
         private void ccKeyUp(object source, LaunchpadCCKeyEventArgs e) {
             
@@ -338,6 +362,7 @@ namespace YouBeatTypes {
                 outputDevice.Dispose();
             }
             if (audioFile != null) {
+                audioFile.CurrentTime = TimeSpan.FromTicks(0);
                 audioFile.Dispose();
             }
         }
@@ -346,8 +371,8 @@ namespace YouBeatTypes {
             StopSong();
             CurrentSong = newSong;
             interf.setClock(CurrentSong.BPM);
-            var path = Path.Combine(Directory.GetCurrentDirectory(), "Songs/Tracks", CurrentSong.FileName);
-            audioFile = new AudioFileReader(path);
+            var path = Path.Combine(Directory.GetCurrentDirectory(), "Songs", CurrentSong.SongName, CurrentSong.FileName);
+            audioFile = new MediaFoundationReader(path);
             outputDevice = new WaveOutEvent();
             outputDevice.Init(audioFile);
             outputDevice.Play();

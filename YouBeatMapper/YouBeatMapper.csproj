@@ -39,6 +39,9 @@
     <Reference Include="Costura, Version=3.3.3.0, Culture=neutral, PublicKeyToken=9919ef960d84173d, processorArchitecture=MSIL">
       <HintPath>..\packages\Costura.Fody.3.3.3\lib\net40\Costura.dll</HintPath>
     </Reference>
+    <Reference Include="Midi, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\midi-dot-net2.2.0.1\lib\net461\Midi.dll</HintPath>
+    </Reference>
     <Reference Include="NAudio, Version=1.10.0.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\packages\NAudio.1.10.0\lib\net35\NAudio.dll</HintPath>
     </Reference>
@@ -74,6 +77,7 @@
     <Compile Include="Mapper.Designer.cs">
       <DependentUpon>Mapper.cs</DependentUpon>
     </Compile>
+    <Compile Include="MapperLPInterf.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <EmbeddedResource Include="Mapper.resx">
@@ -103,6 +107,10 @@
     <None Include="App.config" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\..\launchpad-dot-net\launchpad-dot-net\launchpad-dot-net.csproj">
+      <Project>{2784c4af-3b96-471b-91b0-1a11c342d375}</Project>
+      <Name>launchpad-dot-net</Name>
+    </ProjectReference>
     <ProjectReference Include="..\YouBeatTypes\YouBeatTypes.csproj">
       <Project>{B9DB3148-EC61-4402-9271-564CB0C78C44}</Project>
       <Name>YouBeatTypes</Name>
