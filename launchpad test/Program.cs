@@ -21,6 +21,7 @@ namespace launchpad_test {
                     if (lastScore != gameController.Score || lastCombo != gameController.Combo) {
                         Console.Clear();
                         Console.WriteLine($"Score: {gameController.Score}");
+                        Console.WriteLine($"Last note score: {gameController.Score - lastScore}");
                         Console.WriteLine($"Combo: {gameController.Combo}");
                         lastCombo = gameController.Combo;
                         lastScore = gameController.Score;

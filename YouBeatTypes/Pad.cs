@@ -33,9 +33,6 @@ namespace YouBeatTypes
             _timing = Timing.Early;
             _currentVelo = ScoreVelo.Bad;
             LightPad((int)_currentVelo);
-            _timer.Elapsed -= NoteOffTimerElapsed;
-            _timer.Elapsed += ScoreTimerElapsed;
-            ResetTimer();
         }
 
         public void LightPad(int velo) {
@@ -63,6 +60,7 @@ namespace YouBeatTypes
             Buttons = controller.GetButtonsFromCoord(Location);
             Notes = controller.GetNotesFromButtons(Buttons);
             _timer = new System.Timers.Timer(_controller.Separation);
+            _timer.Elapsed += NoteOffTimerElapsed;
         }
 
         private void ClearPad() {
@@ -95,9 +93,6 @@ namespace YouBeatTypes
                 PastBeats.Add(CurrentBeat);
                 CurrentBeat = null;
             }
-
-            _timer.Elapsed -= ScoreTimerElapsed;
-            _timer.Elapsed += NoteOffTimerElapsed;
             _timer.AutoReset = false;
             _timer.Enabled = true;
         }
@@ -113,7 +108,7 @@ namespace YouBeatTypes
         private void NoteOffTimerElapsed(object sender, ElapsedEventArgs e) {
             ClearPad();
         }
-
+        /*
         private void ScoreTimerElapsed(object sender, ElapsedEventArgs e) {
             if (CurrentBeat != null) {
                 if (_timing == Timing.Early && CurrentBeat.HitTime < _controller.Elapsed)
@@ -180,6 +175,47 @@ namespace YouBeatTypes
                 }
             }
         }
+        */
+
+        public void UpdateBeat() {
+            if (CurrentBeat != null) {
+                var time = _controller.Elapsed;
+                if (_timing == Timing.Early && CurrentBeat.HitTime < time)
+                    _timing = Timing.Late;
+                if (_timing == Timing.Early) {
+                    //each stage needs to display for 25ms, or 250 (the separation)
+                    //perfect should be 125ms each side of the actual time, so:
+                    //Great = hittime +- 375
+                    if (time < CurrentBeat.HitTime - (_controller.HalfSep + _controller.Separation * 4))
+                        _currentVelo = ScoreVelo.Bad;
+                    else if (time < CurrentBeat.HitTime - (_controller.HalfSep + _controller.Separation * 3))
+                        _currentVelo = ScoreVelo.OK;
+                    else if (time < CurrentBeat.HitTime - (_controller.HalfSep + _controller.Separation * 2))
+                        _currentVelo = ScoreVelo.Good;
+                    else if (time < CurrentBeat.HitTime - (_controller.HalfSep + _controller.Separation))
+                        _currentVelo = ScoreVelo.Great;
+                    else if (time < CurrentBeat.HitTime - _controller.HalfSep)
+                        _currentVelo = ScoreVelo.Perfect;
+                } else {
+                    if (time > CurrentBeat.HitTime + _controller.Separation * 5) {
+                        _currentVelo = ScoreVelo.Miss;
+                        ClearPad();
+                        PastBeats.Add(CurrentBeat);
+                        _controller.UpdateCombo(ComboChange.Break);
+                        CurrentBeat = null;
+                    } else if (time > CurrentBeat.HitTime + (_controller.HalfSep + _controller.Separation * 4))
+                        _currentVelo = ScoreVelo.Bad;
+                    else if (time > CurrentBeat.HitTime + (_controller.HalfSep + _controller.Separation * 3))
+                        _currentVelo = ScoreVelo.OK;
+                    else if (time > CurrentBeat.HitTime + (_controller.HalfSep + _controller.Separation * 2))
+                        _currentVelo = ScoreVelo.Good;
+                    else if (time > CurrentBeat.HitTime + (_controller.HalfSep + _controller.Separation))
+                        _currentVelo = ScoreVelo.Great;
+                }
+                LightPad((int)_currentVelo);
+            }
+        }
+        
 
         public bool CheckBeats() {
             if (CurrentBeat != null) {

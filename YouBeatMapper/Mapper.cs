@@ -85,26 +85,27 @@ namespace YouBeatMapper {
                 var inactiveBeats = CurrentSong.Beats.Where(b => (b.HitTime <= currTime - 125) ||  (b.HitTime >= currTime + 125));
                 List<Button> ctlsSeen = new List<Button>();
                 foreach (var beat in activeBeats) {
-                    var ctl = (Button)tableLayoutPanel1.GetControlFromPosition(beat.x, beat.y);
+                    var ctl = (Button)tableLayoutPanel1.GetControlFromPosition(beat.y, beat.x);
                     if (!ctlsSeen.Contains(ctl)) {
                         ctl.BackColor = Color.Red;
                         ctlsSeen.Add(ctl);
                     }
                 }
-                foreach (var beat in inactiveBeats)
-                {
-                    var ctl = (Button)tableLayoutPanel1.GetControlFromPosition(beat.x, beat.y);
-                    if (!ctlsSeen.Contains(ctl)) {
-                        ctl.BackColor = Color.White;
-                        ctlsSeen.Add(ctl);
+                try {
+                    foreach (var beat in inactiveBeats) {
+                        var ctl = (Button)tableLayoutPanel1.GetControlFromPosition(beat.y, beat.x);
+                        if (!ctlsSeen.Contains(ctl)) {
+                            ctl.BackColor = Color.White;
+                            ctlsSeen.Add(ctl);
+                        }
                     }
-                }     
-                foreach (Button ctl in tableLayoutPanel1.Controls) {
-                    if (!ctlsSeen.Contains(ctl)) {
-                        ctl.BackColor = Color.White;
-                        ctlsSeen.Add(ctl);
+                    foreach (Button ctl in tableLayoutPanel1.Controls) {
+                        if (!ctlsSeen.Contains(ctl)) {
+                            ctl.BackColor = Color.White;
+                            ctlsSeen.Add(ctl);
+                        }
                     }
-                }
+                } catch { } //ignore any exceptions, grid will be updated if we're changing the beats anyway
             }
         }
 
@@ -183,11 +184,11 @@ namespace YouBeatMapper {
             if (CurrentSong != null) {
                 var currTime = Convert.ToInt64(audioFile.CurrentTime.TotalMilliseconds);
                 var coords = tableLayoutPanel1.GetPositionFromControl((Control)sender);
-                var existingBeat = CurrentSong.Beats.Where(b => (b.HitTime <= currTime + 125) && (b.HitTime >= currTime - 125) && b.x == coords.Column && b.y == coords.Row).FirstOrDefault();
+                var existingBeat = CurrentSong.Beats.Where(b => (b.HitTime <= currTime + 125) && (b.HitTime >= currTime - 125) && b.x == coords.Row && b.y == coords.Column).FirstOrDefault();
                 if (existingBeat != null) {
                     CurrentSong.Beats.Remove(existingBeat);
                 } else {
-                    var newBeat = new Beat(currTime, coords.Column, coords.Row);
+                    var newBeat = new Beat(currTime, coords.Row, coords.Column);
                     CurrentSong.Beats.Add(newBeat);
                 }
             }

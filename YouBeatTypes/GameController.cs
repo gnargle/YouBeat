@@ -31,7 +31,8 @@ namespace YouBeatTypes {
 
         public Stopwatch GlobalStopwatch { get; set; }
         public long Elapsed { get; set; }
-        public long Separation { get; set; }        
+        public long Separation { get; set; }      
+        public long HalfSep { get; set; }
         public GameState state = GameState.Init;
         public Dictionary<Tuple<int, int>, Pad> Pads = new Dictionary<Tuple<int, int>, Pad>();
         public List<Beat> Beats = new List<Beat>();
@@ -284,6 +285,9 @@ namespace YouBeatTypes {
                         moreBeats = pad.CheckBeats() || moreBeats;
                         if (pad.CurrentBeat == null) {
                             pad.LightPad(CurrentComboVelo);
+                        } else {
+                            //get the timer we were using tae fuck
+                            pad.UpdateBeat();
                         }
                     }
                     if (!moreBeats) {
@@ -322,6 +326,7 @@ namespace YouBeatTypes {
             interf = new Interface();
             velo = 0;
             Separation = 250;
+            HalfSep = Separation / 2; //save calculations later.
             if (!FromMapper) { //if we're created from the mapper, the mapper is managing the launchpad interface.
                 var connected = interf.getConnectedLaunchpads();
                 if (connected.Count() > 0) {

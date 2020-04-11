@@ -57,11 +57,11 @@ namespace YouBeatMapper {
             pad.MapperPressed = true;
             if (CurrentSong != null) {
                 var currTime = Convert.ToInt64(audioFile.CurrentTime.TotalMilliseconds);
-                var existingBeat = CurrentSong.Beats.Where(b => (b.HitTime <= currTime + 125) && (b.HitTime >= currTime - 125) && b.x == coords.Item2 && b.y == coords.Item1).FirstOrDefault();
+                var existingBeat = CurrentSong.Beats.Where(b => (b.HitTime <= currTime + 125) && (b.HitTime >= currTime - 125) && b.x == coords.Item1 && b.y == coords.Item2).FirstOrDefault();
                 if (existingBeat != null) {
                     CurrentSong.Beats.Remove(existingBeat);
                 } else {
-                    var newBeat = new Beat(currTime, coords.Item2, coords.Item1);
+                    var newBeat = new Beat(currTime, coords.Item1, coords.Item2);
                     CurrentSong.Beats.Add(newBeat);
                 }
             }
