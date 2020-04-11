@@ -11,7 +11,7 @@ using System.Threading;
 namespace YouBeatTypes
 {
     public class Pad {
-        public enum ScoreVelo { Miss = 0, Bad = 5, OK = 9, Good = 13, Great = 21, Perfect = 29 }
+        public enum ScoreVelo { Miss = 0, Bad = 7, OK = 5, Good = 9, Great = 13, Perfect = 87 }
         public enum Timing { None, Early, Late }
         public Tuple<int, int> Location { get; set; }
         public List<Tuple<int, int>> Buttons { get; set; }

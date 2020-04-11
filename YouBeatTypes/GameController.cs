@@ -69,7 +69,8 @@ namespace YouBeatTypes {
                             MaxCombo = Combo;
                         break;
                     case ComboChange.Break:
-                        Combo = 0;
+                        //Combo = 0;
+                        Combo++;
                         break;
                 }                
                 if (Combo == 0) CurrentComboVelo = 0;                
@@ -77,16 +78,16 @@ namespace YouBeatTypes {
                     var veloDecider = Beats.Count / Combo;
                     switch (veloDecider) {
                         case 5:
-                            CurrentComboVelo = 72;
+                            CurrentComboVelo = 37;
                             break;
                         case 4:
-                            CurrentComboVelo = 7;
+                            CurrentComboVelo = 45;
                             break;
                         case 3:
-                            CurrentComboVelo = 43;
+                            CurrentComboVelo = 53;
                             break;
                         case 2:
-                            CurrentComboVelo = 59;
+                            CurrentComboVelo = 118;
                             break;
                         case 1:
                             CurrentComboVelo = 12;
@@ -341,9 +342,9 @@ namespace YouBeatTypes {
             interf = new Interface();
             velo = 0;
             Separation = 250;
-            HalfSep = Separation / 2; //save calculations later.
-            hitSound.Load();
+            HalfSep = Separation / 2; //save calculations later.            
             if (!FromMapper) { //if we're created from the mapper, the mapper is managing the launchpad interface.
+                hitSound.Load();
                 var connected = interf.getConnectedLaunchpads();
                 if (connected.Count() > 0) {
                     if (interf.connect(connected[0])) {
