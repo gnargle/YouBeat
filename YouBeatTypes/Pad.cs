@@ -90,6 +90,7 @@ namespace YouBeatTypes
                         break;
                 }
                 _controller.AddToScore(score);
+                _controller.PlayHitSound();
                 PastBeats.Add(CurrentBeat);
                 CurrentBeat = null;
             }

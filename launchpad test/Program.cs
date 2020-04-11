@@ -23,6 +23,9 @@ namespace launchpad_test {
                         Console.WriteLine($"Score: {gameController.Score}");
                         Console.WriteLine($"Last note score: {gameController.Score - lastScore}");
                         Console.WriteLine($"Combo: {gameController.Combo}");
+                        Console.WriteLine($"Max Combo: {gameController.MaxCombo}");
+                        if (gameController.Combo == gameController.TotalBeats)
+                            Console.WriteLine("FULL COMBO!");
                         lastCombo = gameController.Combo;
                         lastScore = gameController.Score;
                     }

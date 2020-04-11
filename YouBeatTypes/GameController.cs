@@ -40,12 +40,15 @@ namespace YouBeatTypes {
         public Song CurrentSong { get; set; }
         public long Score { get; set; }     
         public long Combo { get; set; }
+        public long MaxCombo { get; set; }
+        public long TotalBeats { get { return (long)Beats?.Count; } }
         public int CurrentComboVelo { get; set; } = 0;
 
         private object ComboLock = new object();
         private object ScoreLock = new object();
 
         private Timer _leadInTimer;
+        private System.Media.SoundPlayer hitSound = new System.Media.SoundPlayer("FX\\Blip_Perfect.wav");
 
         public void AddToScore(long moreScore) {
             lock (ScoreLock) {
@@ -53,31 +56,40 @@ namespace YouBeatTypes {
             }
         }
 
+        public void PlayHitSound() {
+            hitSound.Play();
+        }
+
         public void UpdateCombo (ComboChange change) {
             lock (ComboLock) {
                 switch (change) {
                     case ComboChange.Add:
                         Combo++;
+                        if (Combo > MaxCombo)
+                            MaxCombo = Combo;
                         break;
                     case ComboChange.Break:
                         Combo = 0;
                         break;
-                }
-                if (Combo == 0) CurrentComboVelo = 0;
+                }                
+                if (Combo == 0) CurrentComboVelo = 0;                
                 else {
                     var veloDecider = Beats.Count / Combo;
                     switch (veloDecider) {
-                        case 3:
-                            CurrentComboVelo = 19;
+                        case 5:
+                            CurrentComboVelo = 72;
                             break;
-                        case 2:
+                        case 4:
+                            CurrentComboVelo = 7;
+                            break;
+                        case 3:
                             CurrentComboVelo = 43;
                             break;
-                        case 1:
+                        case 2:
                             CurrentComboVelo = 59;
                             break;
-                        case 0:
-                            CurrentComboVelo = 72;
+                        case 1:
+                            CurrentComboVelo = 12;
                             break;
                         default:
                             CurrentComboVelo = 0;
@@ -266,6 +278,9 @@ namespace YouBeatTypes {
                         var pad = Pads[coord];
                         pad.UpcomingBeats = Beats.Where(b => b.x == coord.Item1 && b.y == coord.Item2).ToList<Beat>();
                     }
+                    Combo = 0;
+                    MaxCombo = 0;
+                    Score = 0;
                     GlobalStopwatch = new Stopwatch();
                     _leadInTimer = new Timer(5500) {
                         AutoReset = false                        
@@ -327,6 +342,7 @@ namespace YouBeatTypes {
             velo = 0;
             Separation = 250;
             HalfSep = Separation / 2; //save calculations later.
+            hitSound.Load();
             if (!FromMapper) { //if we're created from the mapper, the mapper is managing the launchpad interface.
                 var connected = interf.getConnectedLaunchpads();
                 if (connected.Count() > 0) {
