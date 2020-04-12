@@ -23,7 +23,6 @@ namespace YouBeatTypes
         public bool MapperPressed { get; set; } = false;
         private Interface _interf;
         private GameController _controller;
-        private System.Timers.Timer _timer;
         private Timing _timing;
         private ScoreVelo _currentVelo;
 
@@ -50,7 +49,6 @@ namespace YouBeatTypes
             _interf = controller.interf;
             Buttons = controller.GetButtonsFromCoord(Location);
             Notes = controller.GetNotesFromButtons(Buttons);
-            _timer = new System.Timers.Timer(_controller.Separation);
         }
 
         public Pad(Tuple<int, int> location, GameController controller, Interface interf) {
@@ -59,8 +57,6 @@ namespace YouBeatTypes
             _interf = interf;
             Buttons = controller.GetButtonsFromCoord(Location);
             Notes = controller.GetNotesFromButtons(Buttons);
-            _timer = new System.Timers.Timer(_controller.Separation);
-            _timer.Elapsed += NoteOffTimerElapsed;
         }
 
         private void ClearPad() {
@@ -72,9 +68,7 @@ namespace YouBeatTypes
         }
 
         public void RegisterHit() {
-            _timer.Enabled = false;
-            var time = _controller.Elapsed;            
-            LightPad(17);
+            var time = _controller.Elapsed;          
             if (CurrentBeat != null) {
                 var denom = CurrentBeat.HitTime - time;
                 if (denom == 0) denom = 1; //if you someone manage to match the note exactly, get the full amount
@@ -94,89 +88,7 @@ namespace YouBeatTypes
                 PastBeats.Add(CurrentBeat);
                 CurrentBeat = null;
             }
-            _timer.AutoReset = false;
-            _timer.Enabled = true;
         }
-
-        private void ResetTimer() {
-            if (_currentVelo == ScoreVelo.Perfect)
-                _timer.Interval = _controller.Separation / 2;
-            else
-                _timer.Interval = _controller.Separation;
-            _timer.Enabled = true;
-        }
-
-        private void NoteOffTimerElapsed(object sender, ElapsedEventArgs e) {
-            ClearPad();
-        }
-        /*
-        private void ScoreTimerElapsed(object sender, ElapsedEventArgs e) {
-            if (CurrentBeat != null) {
-                if (_timing == Timing.Early && CurrentBeat.HitTime < _controller.Elapsed)
-                    _timing = Timing.Late;
-                if (_timing == Timing.Early) {
-                    switch (_currentVelo) {
-                        case ScoreVelo.Bad:
-                            _currentVelo = ScoreVelo.OK;
-                            LightPad((int)_currentVelo);
-                            ResetTimer();
-                            break;
-                        case ScoreVelo.OK:
-                            _currentVelo = ScoreVelo.Good;
-                            LightPad((int)_currentVelo);
-                            ResetTimer();
-                            break;
-                        case ScoreVelo.Good:
-                            _currentVelo = ScoreVelo.Great;
-                            LightPad((int)_currentVelo);
-                            ResetTimer();
-                            break;
-                        case ScoreVelo.Great:
-                            _currentVelo = ScoreVelo.Perfect;
-                            LightPad((int)_currentVelo);
-                            ResetTimer();
-                            break;
-                        case ScoreVelo.Perfect:
-                            LightPad((int)_currentVelo);
-                            ResetTimer();
-                            break;
-                    }
-                } else {
-                    switch (_currentVelo) {
-                        case ScoreVelo.Perfect:
-                            if (_controller.Elapsed > CurrentBeat.HitTime + _controller.Separation) {
-                                _currentVelo = ScoreVelo.Great;
-                                LightPad((int)_currentVelo);
-                            }
-                            ResetTimer();
-                            break;
-                        case ScoreVelo.Great:
-                            _currentVelo = ScoreVelo.Good;
-                            LightPad((int)_currentVelo);
-                            ResetTimer();
-                            break;
-                        case ScoreVelo.Good:
-                            _currentVelo = ScoreVelo.OK;
-                            LightPad((int)_currentVelo);
-                            ResetTimer();
-                            break;
-                        case ScoreVelo.OK:
-                            _currentVelo = ScoreVelo.Bad;
-                            LightPad((int)_currentVelo);
-                            ResetTimer();
-                            break;
-                        case ScoreVelo.Bad:
-                            _currentVelo = ScoreVelo.Miss;
-                            ClearPad();
-                            PastBeats.Add(CurrentBeat);
-                            _controller.UpdateCombo(ComboChange.Break);
-                            CurrentBeat = null;
-                            break;
-                    }
-                }
-            }
-        }
-        */
 
         public void UpdateBeat() {
             if (CurrentBeat != null) {

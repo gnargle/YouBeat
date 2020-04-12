@@ -56,10 +56,16 @@
             this.fileDialogNewSong = new System.Windows.Forms.OpenFileDialog();
             this.pgCurrentSong = new System.Windows.Forms.PropertyGrid();
             this.saveFileDialog1 = new System.Windows.Forms.SaveFileDialog();
+            this.flowLayoutPanel1 = new System.Windows.Forms.FlowLayoutPanel();
+            this.flowLayoutPanel2 = new System.Windows.Forms.FlowLayoutPanel();
+            this.lDifficulty = new System.Windows.Forms.Label();
+            this.cbDifficulty = new System.Windows.Forms.ComboBox();
             this.menuStrip1.SuspendLayout();
             this.tableLayoutPanel1.SuspendLayout();
             this.panel17.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.trackBar1)).BeginInit();
+            this.flowLayoutPanel1.SuspendLayout();
+            this.flowLayoutPanel2.SuspendLayout();
             this.SuspendLayout();
             // 
             // menuStrip1
@@ -113,7 +119,7 @@
             // 
             // fileDialogSongLoad
             // 
-            this.fileDialogSongLoad.Filter = "Track Files|*.trk,*.arc";
+            this.fileDialogSongLoad.Filter = "Track Files|*.trk;*.arc";
             this.fileDialogSongLoad.Title = "Load Song";
             // 
             // tableLayoutPanel1
@@ -383,9 +389,9 @@
             // 
             // pgCurrentSong
             // 
-            this.pgCurrentSong.Location = new System.Drawing.Point(927, 389);
+            this.pgCurrentSong.Location = new System.Drawing.Point(3, 45);
             this.pgCurrentSong.Name = "pgCurrentSong";
-            this.pgCurrentSong.Size = new System.Drawing.Size(316, 282);
+            this.pgCurrentSong.Size = new System.Drawing.Size(335, 282);
             this.pgCurrentSong.TabIndex = 3;
             // 
             // saveFileDialog1
@@ -393,13 +399,57 @@
             this.saveFileDialog1.Filter = "Track Files|*.trk";
             this.saveFileDialog1.Title = "Save song...";
             // 
+            // flowLayoutPanel1
+            // 
+            this.flowLayoutPanel1.BackColor = System.Drawing.SystemColors.Control;
+            this.flowLayoutPanel1.Controls.Add(this.flowLayoutPanel2);
+            this.flowLayoutPanel1.Controls.Add(this.pgCurrentSong);
+            this.flowLayoutPanel1.Dock = System.Windows.Forms.DockStyle.Left;
+            this.flowLayoutPanel1.Location = new System.Drawing.Point(0, 88);
+            this.flowLayoutPanel1.Name = "flowLayoutPanel1";
+            this.flowLayoutPanel1.Size = new System.Drawing.Size(346, 595);
+            this.flowLayoutPanel1.TabIndex = 4;
+            // 
+            // flowLayoutPanel2
+            // 
+            this.flowLayoutPanel2.Controls.Add(this.lDifficulty);
+            this.flowLayoutPanel2.Controls.Add(this.cbDifficulty);
+            this.flowLayoutPanel2.Location = new System.Drawing.Point(3, 3);
+            this.flowLayoutPanel2.Name = "flowLayoutPanel2";
+            this.flowLayoutPanel2.Size = new System.Drawing.Size(335, 36);
+            this.flowLayoutPanel2.TabIndex = 4;
+            // 
+            // lDifficulty
+            // 
+            this.lDifficulty.AutoSize = true;
+            this.lDifficulty.Font = new System.Drawing.Font("Microsoft Sans Serif", 15F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.lDifficulty.Location = new System.Drawing.Point(3, 0);
+            this.lDifficulty.Name = "lDifficulty";
+            this.lDifficulty.Padding = new System.Windows.Forms.Padding(0, 5, 0, 0);
+            this.lDifficulty.Size = new System.Drawing.Size(84, 30);
+            this.lDifficulty.TabIndex = 0;
+            this.lDifficulty.Text = "Difficulty";
+            this.lDifficulty.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
+            // 
+            // cbDifficulty
+            // 
+            this.cbDifficulty.DropDownHeight = 120;
+            this.cbDifficulty.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            this.cbDifficulty.FormattingEnabled = true;
+            this.cbDifficulty.IntegralHeight = false;
+            this.cbDifficulty.Location = new System.Drawing.Point(93, 3);
+            this.cbDifficulty.Name = "cbDifficulty";
+            this.cbDifficulty.Size = new System.Drawing.Size(231, 21);
+            this.cbDifficulty.TabIndex = 1;
+            this.cbDifficulty.SelectedIndexChanged += new System.EventHandler(this.cbDifficulty_SelectedIndexChanged);
+            // 
             // Mapper
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.BackColor = System.Drawing.SystemColors.ControlDark;
             this.ClientSize = new System.Drawing.Size(1243, 683);
-            this.Controls.Add(this.pgCurrentSong);
+            this.Controls.Add(this.flowLayoutPanel1);
             this.Controls.Add(this.tableLayoutPanel1);
             this.Controls.Add(this.panel17);
             this.Controls.Add(this.menuStrip1);
@@ -412,6 +462,9 @@
             this.panel17.ResumeLayout(false);
             this.panel17.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)(this.trackBar1)).EndInit();
+            this.flowLayoutPanel1.ResumeLayout(false);
+            this.flowLayoutPanel2.ResumeLayout(false);
+            this.flowLayoutPanel2.PerformLayout();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -451,6 +504,10 @@
         private System.Windows.Forms.ToolStripMenuItem saveAsToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem saveToolStripMenuItem;
         private System.Windows.Forms.SaveFileDialog saveFileDialog1;
+        private System.Windows.Forms.FlowLayoutPanel flowLayoutPanel1;
+        private System.Windows.Forms.FlowLayoutPanel flowLayoutPanel2;
+        private System.Windows.Forms.Label lDifficulty;
+        private System.Windows.Forms.ComboBox cbDifficulty;
     }
 }
 

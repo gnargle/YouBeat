@@ -13,7 +13,11 @@ namespace YouBeatTypes {
         public string FileName { get; set; }
         public string SongName { get; set; }
         public int BPM { get; set; }
-        public List<Beat> Beats { get; set; }
+        public long LeadInTime { get; set; }
+        public bool LeadInTimeGenerated;
+        public List<Beat> EasyBeats { get; set; }
+        public List<Beat> AdvancedBeats { get; set; }
+        public List<Beat> ExpertBeats { get; set; }
         public Song() {
 
         }

@@ -16,6 +16,7 @@ namespace YouBeatMapper {
         private Interface interf;
 
         public Song CurrentSong { get; set; }
+        public List<Beat> CurrentBeats { get; set; }
         public MediaFoundationReader AudioFile { get; set; }
         public WaveOut WvOut { get; set; }
 
@@ -57,12 +58,12 @@ namespace YouBeatMapper {
             pad.MapperPressed = true;
             if (CurrentSong != null) {
                 var currTime = Convert.ToInt64(AudioFile.CurrentTime.TotalMilliseconds);
-                var existingBeat = CurrentSong.Beats.Where(b => (b.HitTime <= currTime + 125) && (b.HitTime >= currTime - 125) && b.x == coords.Item1 && b.y == coords.Item2).FirstOrDefault();
+                var existingBeat = CurrentBeats.Where(b => (b.HitTime <= currTime + 125) && (b.HitTime >= currTime - 125) && b.x == coords.Item1 && b.y == coords.Item2).FirstOrDefault();
                 if (existingBeat != null) {
-                    CurrentSong.Beats.Remove(existingBeat);
+                    CurrentBeats.Remove(existingBeat);
                 } else {
                     var newBeat = new Beat(currTime, coords.Item1, coords.Item2);
-                    CurrentSong.Beats.Add(newBeat);
+                    CurrentBeats.Add(newBeat);
                 }
             }
         }

@@ -11,10 +11,11 @@ using System.Xml.Serialization;
 using static LaunchpadNET.Interface;
 using Newtonsoft.Json;
 using NAudio.Wave;
+using NAudio.Wave.SampleProviders;
 
 namespace YouBeatTypes {    
     public class GameController {
-        private string[] songManifests;
+        private string[] songZips;
         private List<Song> Songs = new List<Song>();
         private MediaFoundationReader audioFile;
         private WaveOutEvent outputDevice;
@@ -28,12 +29,13 @@ namespace YouBeatTypes {
         public const int ARROW_VELO = 37;
         public const int ARROW_HELD_VELO = 57;
         public const int CONFIRM_VELO = 21;
-
-        public Stopwatch GlobalStopwatch { get; set; }
+        public const int CANCEL_VELO = 5;
         public long Elapsed { get; set; }
         public long Separation { get; set; }      
         public long HalfSep { get; set; }
-        public GameState state = GameState.Init;
+        public GameState State { get; set; } = GameState.Init;
+        public MenuState menuState { get; set; } = MenuState.SongSelect;
+        public Difficulty SelectedDifficulty { get; set; } = Difficulty.Easy;
         public Dictionary<Tuple<int, int>, Pad> Pads = new Dictionary<Tuple<int, int>, Pad>();
         public List<Beat> Beats = new List<Beat>();
         
@@ -69,8 +71,7 @@ namespace YouBeatTypes {
                             MaxCombo = Combo;
                         break;
                     case ComboChange.Break:
-                        //Combo = 0;
-                        Combo++;
+                        Combo = 0;
                         break;
                 }                
                 if (Combo == 0) CurrentComboVelo = 0;                
@@ -105,6 +106,7 @@ namespace YouBeatTypes {
             var rightArrow = new List<Pitch>() { Pitch.D0, Pitch.DSharp0, Pitch.E0, Pitch.F0, Pitch.FSharp0, Pitch.DSharp1, Pitch.E1, Pitch.D2 };
             var confirm = new List<Pitch>() { Pitch.A1, Pitch.ASharp1, Pitch.B1, Pitch.C2,Pitch.G2, Pitch.GSharp2, Pitch.A2, Pitch.ASharp2,
                                                    Pitch.F3, Pitch.FSharp3, Pitch.G3, Pitch.GSharp3, Pitch.DSharp4, Pitch.E4, Pitch.F4, Pitch.FSharp4};
+            var cancel = new List<Pitch>() { Pitch.BNeg1, Pitch.C0, Pitch.A0, Pitch.ASharp0, Pitch.F5, Pitch.FSharp5, Pitch.DSharp6, Pitch.E6}; 
             var note = interf.ledToMidiNote(x, y);
             if (leftArrow.Contains(note)) {
                 return MenuKey.LeftArrow;
@@ -112,6 +114,8 @@ namespace YouBeatTypes {
                 return MenuKey.RightArrow;
             } else if (confirm.Contains(note)) {
                 return MenuKey.Confim;
+            } else if (cancel.Contains(note)) {
+                return MenuKey.Cancel;
             }
             return MenuKey.None;
         }
@@ -124,7 +128,7 @@ namespace YouBeatTypes {
         private void KeyUp(object source, LaunchpadKeyEventArgs e) {
             int x, y;
             x = e.GetX(); y = e.GetY();
-            switch (state) {
+            switch (State) {
                 case GameState.Menu:
                     var menu = KeyInMenuObject(x, y);
                     switch (menu) {
@@ -146,7 +150,7 @@ namespace YouBeatTypes {
         private void KeyDown(object sender, LaunchpadKeyEventArgs e) {
             int x, y;
             x = e.GetX(); y = e.GetY();
-            switch (state) {
+            switch (State) {
                 case GameState.Menu:
                     var menu = KeyInMenuObject(x, y);
                     switch (menu) {
@@ -159,7 +163,10 @@ namespace YouBeatTypes {
                             ChangeMenuColour(velo);
                             _lArrowHeld = true;
                             PaintLArrowHeld();
-                            SetPrevSong();
+                            if (menuState == MenuState.SongSelect)
+                                SetPrevSong();
+                            else if (menuState == MenuState.DifficultySelect)
+                                DecreaseDifficulty();
                             break;
                         case MenuKey.RightArrow:
                             if (velo == 127) {
@@ -169,11 +176,21 @@ namespace YouBeatTypes {
                             }
                             ChangeMenuColour(velo);
                             _rArrowHeld = true;
-                            PaintRArrowHeld();                            
-                            SetNextSong();
+                            PaintRArrowHeld();
+                            if (menuState == MenuState.SongSelect)
+                                SetNextSong();
+                            else if (menuState == MenuState.DifficultySelect)
+                                IncreaseDifficulty();
                             break;
                         case MenuKey.Confim:
-                            state = GameState.Setup;
+                            if (menuState == MenuState.SongSelect)
+                                menuState = MenuState.DifficultySelect;
+                            else if (menuState == MenuState.DifficultySelect)
+                                State = GameState.Setup;
+                            break;
+                        case MenuKey.Cancel:
+                            if (menuState == MenuState.DifficultySelect)
+                                menuState = MenuState.SongSelect;
                             break;
                     }
                     break;
@@ -182,6 +199,13 @@ namespace YouBeatTypes {
                     pad.RegisterHit();
                     break;
             }
+        }
+
+        private void IncreaseDifficulty() {
+            SelectedDifficulty = SelectedDifficulty.Next();
+        }
+        private void DecreaseDifficulty() {
+            SelectedDifficulty = SelectedDifficulty.Previous();
         }
 
         private void SetPrevSong() {
@@ -233,6 +257,13 @@ namespace YouBeatTypes {
                 interf.massUpdateLEDs(xs, ys, ARROW_VELO, LightingMode.Pulse);
             //confirm
             interf.massUpdateLEDsRectangle(2, 2, 5, 5, CONFIRM_VELO, LightingMode.Pulse);
+            if (!(menuState == MenuState.SongSelect)) {
+                interf.massUpdateLEDsRectangle(6, 0, 7, 1, CANCEL_VELO, LightingMode.Pulse);
+                interf.massUpdateLEDsRectangle(0, 6, 1, 7, CANCEL_VELO, LightingMode.Pulse);
+            } else {
+                interf.massUpdateLEDsRectangle(6, 0, 7, 1, velo);
+                interf.massUpdateLEDsRectangle(0, 6, 1, 7, velo);
+            }
         }
         public List<Pitch> GetNotesFromButtons(List<Tuple<int, int>> buttons) {
             List<Pitch> result = new List<Pitch>();
@@ -255,16 +286,16 @@ namespace YouBeatTypes {
         }
 
         public void MainLoop() {
-            switch (state) {
+            switch (State) {
                 case GameState.Init:
-                    songManifests = Directory.GetFiles($"Songs", "*.js");
-                    foreach (var songFile in songManifests) {
+                    songZips = Directory.GetFiles($"Songs", "*.js", SearchOption.AllDirectories);
+                    foreach (var songFile in songZips) {
                         var json = File.ReadAllText(songFile);
                         var song = JsonConvert.DeserializeObject<Song>(json);
                         Songs.Add(song);
                     };
                     SetSong(Songs.First());
-                    state = GameState.Menu;
+                    State = GameState.Menu;
                     break;
                 case GameState.Menu:
                     DrawMenuKeys();
@@ -274,7 +305,12 @@ namespace YouBeatTypes {
                     StopSong();
                     interf.clearAllLEDs();
                     CreatePads();
-                    Beats.AddRange(CurrentSong.Beats);
+                    if (SelectedDifficulty == Difficulty.Easy)
+                        Beats.AddRange(CurrentSong.EasyBeats);
+                    else if (SelectedDifficulty == Difficulty.Advanced)
+                        Beats.AddRange(CurrentSong.AdvancedBeats);
+                    else if (SelectedDifficulty == Difficulty.Expert)
+                        Beats.AddRange(CurrentSong.ExpertBeats);
                     foreach (var coord in Pads.Keys) {
                         var pad = Pads[coord];
                         pad.UpcomingBeats = Beats.Where(b => b.x == coord.Item1 && b.y == coord.Item2).ToList<Beat>();
@@ -282,14 +318,13 @@ namespace YouBeatTypes {
                     Combo = 0;
                     MaxCombo = 0;
                     Score = 0;
-                    GlobalStopwatch = new Stopwatch();
-                    _leadInTimer = new Timer(5500) {
+                    SetSong(CurrentSong, false, true);
+                    _leadInTimer = new Timer(3000) {
                         AutoReset = false                        
                     };
                     _leadInTimer.Elapsed += _leadInTimer_Elapsed;
-                    _leadInTimer.Start();
-                    GlobalStopwatch.Start();                    
-                    state = GameState.Game;
+                    _leadInTimer.Start();              
+                    State = GameState.Game;
                     break;
                 case GameState.Game:
                     if (audioFile == null || audioFile.CurrentTime == null)
@@ -307,13 +342,13 @@ namespace YouBeatTypes {
                         }
                     }
                     if (!moreBeats) {
-                        state = GameState.GameEnding;
+                        State = GameState.GameEnding;
                     }
                     break;
                 case GameState.GameEnding:
                     foreach (var pad in Pads.Values)
                         pad.LightPad(CurrentComboVelo);
-                    state = GameState.GameOver;
+                    State = GameState.GameOver;
                     break;
                 case GameState.GameOver:
                     foreach (var pad in Pads.Values)
@@ -322,8 +357,8 @@ namespace YouBeatTypes {
             }
         }
 
-        private void _leadInTimer_Elapsed(object sender, ElapsedEventArgs e) {
-            SetSong(CurrentSong);
+        private void _leadInTimer_Elapsed(object sender, ElapsedEventArgs e) {            
+            outputDevice.Play();
         }
 
         public void CreatePads() {
@@ -355,20 +390,19 @@ namespace YouBeatTypes {
                         interf.clearAllLEDs();
                     }
                 }
-                songManifests = Directory.GetFiles($"Songs", "*.trk");
-                foreach (var SongFile in songManifests) {
+                songZips = Directory.GetFiles($"Songs", "*.trk");
+                foreach (var SongFile in songZips) {
                     var SongName = Path.GetFileNameWithoutExtension(SongFile);
                     var SongFolder = Path.Combine(Path.GetDirectoryName(SongFile), SongName);
                     if (Directory.Exists(SongFolder))
                         Directory.Delete(SongFolder, true);
                     ZipFile.ExtractToDirectory(SongFile, SongFolder);
-                    File.Copy(SongFile, Path.ChangeExtension(SongFile,".arc"), true);
-                    var json = File.ReadAllText($@"{SongFolder}\{SongName}.js");
-                    var song = JsonConvert.DeserializeObject<Song>(json);
-                    Songs.Add(song);
+                    if (File.Exists(Path.ChangeExtension(SongFile, ".arc")))
+                        File.Delete(Path.ChangeExtension(SongFile, ".arc"));
+                    File.Move(SongFile, Path.ChangeExtension(SongFile, ".arc"));
                 };
                 foreach (var archiveSong in Directory.GetFiles($"Songs", "*.arc")) {
-                    if (File.GetLastAccessTime(archiveSong) > DateTime.Now.AddDays(-7)) {
+                    if (File.GetLastAccessTime(archiveSong) < DateTime.Now.AddDays(-7)) {
                         File.Delete(archiveSong);//clean up after ourselves after a suitable length of time.
                     }
                 }
@@ -396,15 +430,25 @@ namespace YouBeatTypes {
             }
         }
 
-        private void SetSong(Song newSong) {
+        private void SetSong(Song newSong, bool play = true, bool addLeadIn = false) {
             StopSong();
             CurrentSong = newSong;
             interf.setClock(CurrentSong.BPM);
             var path = Path.Combine(Directory.GetCurrentDirectory(), "Songs", CurrentSong.SongName, CurrentSong.FileName);
             audioFile = new MediaFoundationReader(path);
-            outputDevice = new WaveOutEvent();
-            outputDevice.Init(audioFile);
-            outputDevice.Play();
+            if (addLeadIn) {
+                //var offset = new OffsetSampleProvider(audioFile.ToSampleProvider());
+                //offset.DelayBy = TimeSpan.FromSeconds(CurrentSong.LeadInTime);
+                //audioFile = (MediaFoundationReader)offset.ToWaveProvider();
+                //offsets the file, but then we can't get time played at present. Need to fix.
+                outputDevice = new WaveOutEvent();
+                outputDevice.Init(audioFile);
+            } else {
+                outputDevice = new WaveOutEvent();
+                outputDevice.Init(audioFile);
+            }            
+            if (play)
+                outputDevice.Play();            
             outputDevice.PlaybackStopped += OutputDevice_PlaybackStopped;
         }
 

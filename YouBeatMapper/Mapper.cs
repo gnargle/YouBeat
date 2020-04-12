@@ -14,6 +14,7 @@ using System.Threading.Tasks;
 using System.Windows.Forms;
 using YouBeatTypes;
 using LaunchpadNET;
+using NAudio.Wave.SampleProviders;
 
 namespace YouBeatMapper {
     public partial class Mapper : Form {
@@ -28,14 +29,49 @@ namespace YouBeatMapper {
 
         private bool closing = false;       
         private MapperLPInterf launchpad;
+        private List<Beat> CurrentBeats;
+        public Song CurrentSong { get; private set; }
 
         public Mapper() {
             InitializeComponent();
             this.FormClosing += ButtonStop_Click;
-            launchpad = new MapperLPInterf(); 
+            launchpad = new MapperLPInterf();
+            cbDifficulty.DataSource = Enum.GetValues(typeof(Difficulty));
+            cbDifficulty.SelectedIndex = 1;
         }
-
-        public Song CurrentSong { get; private set; }
+        
+        private void NewSongToolStripMenuItem_Click(object sender, EventArgs e) {
+            if (fileDialogNewSong.ShowDialog() == DialogResult.OK) {
+                SongFile = String.Empty;
+                SongFolder = Path.Combine(Path.GetDirectoryName(fileDialogNewSong.FileName), Path.GetFileNameWithoutExtension(fileDialogNewSong.FileName));
+                Directory.CreateDirectory(SongFolder);
+                File.Copy(fileDialogNewSong.FileName, Path.Combine(SongFolder, Path.GetFileName(fileDialogNewSong.FileName)), true);//drop audio into folder for later
+                var tfile = TagLib.File.Create(fileDialogNewSong.FileName);
+                CurrentSong = new Song() {
+                    FileName = Path.GetFileName(fileDialogNewSong.FileName),
+                    EasyBeats = new List<Beat>(),
+                    AdvancedBeats = new List<Beat>(),
+                    ExpertBeats = new List<Beat>(),
+                    Title = tfile.Tag.Title,
+                    Artist = tfile.Tag.FirstPerformer,
+                    BPM = (int)tfile.Tag.BeatsPerMinute,
+                    SongName = Path.GetFileNameWithoutExtension(fileDialogNewSong.FileName)
+                };
+                cbDifficulty.SelectedIndex = 1;
+                cbDifficulty_SelectedIndexChanged(cbDifficulty, null);
+                CurrentBeats = CurrentSong.AdvancedBeats;
+                pgCurrentSong.SelectedObject = CurrentSong;
+                audioFile = new MediaFoundationReader(Path.Combine(SongFolder, Path.GetFileName(fileDialogNewSong.FileName)));
+                wvOut = new WaveOut();
+                wvOut.PlaybackStopped += OnPlaybackStopped;
+                wvOut.Init(audioFile);
+                launchpad.AudioFile = audioFile;
+                launchpad.WvOut = wvOut;
+                launchpad.CurrentSong = CurrentSong;
+                timer1.Enabled = true;
+                trackBar1.Value = 0;
+            }
+        }
 
         private void LoadSongToolStripMenuItem_Click(object sender, EventArgs e) {
             if (fileDialogSongLoad.ShowDialog() == DialogResult.OK) {
@@ -57,6 +93,17 @@ namespace YouBeatMapper {
                 var file = Path.Combine(SongFolder, Path.GetFileNameWithoutExtension(fileDialogSongLoad.FileName) + ".js");
                 var json = File.ReadAllText(file);
                 CurrentSong = JsonConvert.DeserializeObject<Song>(json);
+                if (CurrentSong.EasyBeats == null) {
+                    CurrentSong.EasyBeats = new List<Beat>();
+                }
+                if (CurrentSong.AdvancedBeats == null) {
+                    CurrentSong.AdvancedBeats = new List<Beat>();
+                }
+                if (CurrentSong.ExpertBeats == null) {
+                    CurrentSong.ExpertBeats = new List<Beat>();
+                }
+                cbDifficulty.SelectedIndex = 1;
+                cbDifficulty_SelectedIndexChanged(cbDifficulty, null);
                 pgCurrentSong.SelectedObject = CurrentSong;
                 audioFile = new MediaFoundationReader(AudioFileName);
                 wvOut = new WaveOut();
@@ -77,12 +124,12 @@ namespace YouBeatMapper {
 
         private void UpdateGrid()
         {
-            if (CurrentSong != null)
+            if (CurrentSong != null && CurrentBeats != null)
             {
                 //these aren't right rn
                 var currTime = Convert.ToInt64(audioFile.CurrentTime.TotalMilliseconds);
-                var activeBeats = CurrentSong.Beats.Where(b => (b.HitTime <= currTime + 125) && (b.HitTime >= currTime - 125));
-                var inactiveBeats = CurrentSong.Beats.Where(b => (b.HitTime <= currTime - 125) ||  (b.HitTime >= currTime + 125));
+                var activeBeats = CurrentBeats.Where(b => (b.HitTime <= currTime + 125) && (b.HitTime >= currTime - 125));
+                var inactiveBeats = CurrentBeats.Where(b => (b.HitTime <= currTime - 125) ||  (b.HitTime >= currTime + 125));
                 List<Button> ctlsSeen = new List<Button>();
                 foreach (var beat in activeBeats) {
                     var ctl = (Button)tableLayoutPanel1.GetControlFromPosition(beat.y, beat.x);
@@ -150,46 +197,18 @@ namespace YouBeatMapper {
                 audioFile.Position = (trackBar1.Value * audioFile.Length) / trackBar1.Maximum;
             }
             UpdateGrid();
-        }
-
-        private void NewSongToolStripMenuItem_Click(object sender, EventArgs e) {
-            if (fileDialogNewSong.ShowDialog() == DialogResult.OK) {
-                SongFile = String.Empty;
-                SongFolder = Path.Combine(Path.GetDirectoryName(fileDialogNewSong.FileName), Path.GetFileNameWithoutExtension(fileDialogNewSong.FileName));
-                Directory.CreateDirectory(SongFolder);
-                File.Copy(fileDialogNewSong.FileName, Path.Combine(SongFolder, Path.GetFileName(fileDialogNewSong.FileName)), true);//drop audio into folder for later
-                var tfile = TagLib.File.Create(fileDialogNewSong.FileName);
-                CurrentSong = new Song() {
-                    FileName = Path.GetFileName(fileDialogNewSong.FileName),
-                    Beats = new List<Beat>(),
-                    Title = tfile.Tag.Title,
-                    Artist = tfile.Tag.FirstPerformer,
-                    BPM = (int)tfile.Tag.BeatsPerMinute,    
-                    SongName = Path.GetFileNameWithoutExtension(fileDialogNewSong.FileName)
-                };
-                pgCurrentSong.SelectedObject = CurrentSong;
-                audioFile = new MediaFoundationReader(Path.Combine(SongFolder, Path.GetFileName(fileDialogNewSong.FileName)));
-                wvOut = new WaveOut();
-                wvOut.PlaybackStopped += OnPlaybackStopped;
-                wvOut.Init(audioFile);
-                launchpad.AudioFile = audioFile;
-                launchpad.WvOut = wvOut;
-                launchpad.CurrentSong = CurrentSong;
-                timer1.Enabled = true;
-                trackBar1.Value = 0;
-            }
-        }
+        }        
 
         private void ButtonClick(object sender, EventArgs e) {
             if (CurrentSong != null) {
                 var currTime = Convert.ToInt64(audioFile.CurrentTime.TotalMilliseconds);
                 var coords = tableLayoutPanel1.GetPositionFromControl((Control)sender);
-                var existingBeat = CurrentSong.Beats.Where(b => (b.HitTime <= currTime + 125) && (b.HitTime >= currTime - 125) && b.x == coords.Row && b.y == coords.Column).FirstOrDefault();
+                var existingBeat = CurrentBeats.Where(b => (b.HitTime <= currTime + 125) && (b.HitTime >= currTime - 125) && b.x == coords.Row && b.y == coords.Column).FirstOrDefault();
                 if (existingBeat != null) {
-                    CurrentSong.Beats.Remove(existingBeat);
+                    CurrentBeats.Remove(existingBeat);
                 } else {
                     var newBeat = new Beat(currTime, coords.Row, coords.Column);
-                    CurrentSong.Beats.Add(newBeat);
+                    CurrentBeats.Add(newBeat);
                 }
             }
         }
@@ -199,14 +218,20 @@ namespace YouBeatMapper {
                 throw new SaveValidationException("No song is loaded!");            
             if (CurrentSong.BPM < 40 || CurrentSong.BPM > 240)
                 throw new SaveValidationException("BPM set to an invalid value. BPM of song must be between 40 and 240 for the launchpad light pulse to function.");
-            if (!CurrentSong.Beats.Any())
-                throw new SaveValidationException("No beats in track.");
+            if (!CurrentBeats.Any())
+                throw new SaveValidationException("No beats in current difficulty track.");
         }
 
         private void SaveSong()
         {
             try {
                 ValidateSong();
+                //might need to generate the lead in time here and add the lead in time to every note...
+                /*if (!CurrentSong.LeadInTimeGenerated) {
+                    var offset = new OffsetSampleProvider(audioFile.ToSampleProvider());
+                    offset.DelayBy = TimeSpan.FromSeconds(CurrentSong.LeadInTime);
+                    audioFile = (MediaFoundationReader)offset.ToWaveProvider();
+                }*/
                 var json = JsonConvert.SerializeObject(CurrentSong);
                 File.WriteAllText(Path.Combine(SongFolder, $"{Path.GetFileNameWithoutExtension(SongFile)}.js"), json);
                 File.Delete(SongFile);
@@ -233,11 +258,23 @@ namespace YouBeatMapper {
 
         private void SaveToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            if (String.IsNullOrWhiteSpace(SongFile))
+            if (String.IsNullOrWhiteSpace(SongFile) || SongFile.EndsWith(".arc"))
                 SaveAsToolStripMenuItem_Click(sender, e);
             else if (CurrentSong != null)
             {
                 SaveSong();
+            }
+        }
+
+        private void cbDifficulty_SelectedIndexChanged(object sender, EventArgs e) {
+            if (CurrentSong != null) {
+                if (cbDifficulty.SelectedIndex == 0) 
+                    CurrentBeats = CurrentSong.EasyBeats;                    
+                else if (cbDifficulty.SelectedIndex == 1)
+                    CurrentBeats = CurrentSong.AdvancedBeats;
+                else
+                    CurrentBeats = CurrentSong.ExpertBeats;
+                launchpad.CurrentBeats = CurrentBeats;
             }
         }
     }
