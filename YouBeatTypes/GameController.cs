@@ -362,10 +362,17 @@ namespace YouBeatTypes {
                     if (Directory.Exists(SongFolder))
                         Directory.Delete(SongFolder, true);
                     ZipFile.ExtractToDirectory(SongFile, SongFolder);
+                    File.Copy(SongFile, Path.ChangeExtension(SongFile,".arc"), true);
                     var json = File.ReadAllText($@"{SongFolder}\{SongName}.js");
                     var song = JsonConvert.DeserializeObject<Song>(json);
                     Songs.Add(song);
                 };
+                foreach (var archiveSong in Directory.GetFiles($"Songs", "*.arc")) {
+                    if (File.GetLastAccessTime(archiveSong) > DateTime.Now.AddDays(-7)) {
+                        File.Delete(archiveSong);//clean up after ourselves after a suitable length of time.
+                    }
+                }
+
             }            
         }        
 
