@@ -80,6 +80,7 @@
     <Compile Include="MapperLPInterf.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="SaveValidationException.cs" />
     <EmbeddedResource Include="Mapper.resx">
       <DependentUpon>Mapper.cs</DependentUpon>
     </EmbeddedResource>

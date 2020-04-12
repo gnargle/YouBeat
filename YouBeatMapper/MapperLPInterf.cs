@@ -16,8 +16,8 @@ namespace YouBeatMapper {
         private Interface interf;
 
         public Song CurrentSong { get; set; }
-        public MediaFoundationReader audioFile { get; set; }
-        public WaveOut wvOut { get; set; }
+        public MediaFoundationReader AudioFile { get; set; }
+        public WaveOut WvOut { get; set; }
 
         public MapperLPInterf() {
             controller = new GameController(true);
@@ -25,8 +25,8 @@ namespace YouBeatMapper {
             var connected = interf.getConnectedLaunchpads();
             if (connected.Count() > 0) {
                 if (interf.connect(connected[0])) {
-                    interf.OnLaunchpadKeyDown += keyDown;
-                    interf.OnLaunchpadKeyUp += keyUp;
+                    interf.OnLaunchpadKeyDown += KeyDown;
+                    interf.OnLaunchpadKeyUp += KeyUp;
                     interf.clearAllLEDs();
                 }
                 int velo = 33;
@@ -42,21 +42,21 @@ namespace YouBeatMapper {
             }
         }
 
-        private void keyUp(object source, Interface.LaunchpadKeyEventArgs e) {
+        private void KeyUp(object source, Interface.LaunchpadKeyEventArgs e) {
             int x, y;
             x = e.GetX(); y = e.GetY();
             var pad = Pads[controller.GetCoordFromButton(x, y)];
             pad.MapperPressed = false;
         }
 
-        private void keyDown(object source, Interface.LaunchpadKeyEventArgs e) {
+        private void KeyDown(object source, Interface.LaunchpadKeyEventArgs e) {
             int x, y;
             x = e.GetX(); y = e.GetY();
             var coords = controller.GetCoordFromButton(x, y);
             var pad = Pads[coords];
             pad.MapperPressed = true;
             if (CurrentSong != null) {
-                var currTime = Convert.ToInt64(audioFile.CurrentTime.TotalMilliseconds);
+                var currTime = Convert.ToInt64(AudioFile.CurrentTime.TotalMilliseconds);
                 var existingBeat = CurrentSong.Beats.Where(b => (b.HitTime <= currTime + 125) && (b.HitTime >= currTime - 125) && b.x == coords.Item1 && b.y == coords.Item2).FirstOrDefault();
                 if (existingBeat != null) {
                     CurrentSong.Beats.Remove(existingBeat);

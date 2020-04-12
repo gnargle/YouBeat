@@ -100,7 +100,7 @@ namespace YouBeatTypes {
             }
         }
         
-        private MenuKey keyInMenuObject(int x, int y) {
+        private MenuKey KeyInMenuObject(int x, int y) {
             var leftArrow = new List<Pitch>() { Pitch.A5, Pitch.ASharp5, Pitch.B5, Pitch.C6, Pitch.CSharp6, Pitch.B4, Pitch.C5, Pitch.CSharp4 };
             var rightArrow = new List<Pitch>() { Pitch.D0, Pitch.DSharp0, Pitch.E0, Pitch.F0, Pitch.FSharp0, Pitch.DSharp1, Pitch.E1, Pitch.D2 };
             var confirm = new List<Pitch>() { Pitch.A1, Pitch.ASharp1, Pitch.B1, Pitch.C2,Pitch.G2, Pitch.GSharp2, Pitch.A2, Pitch.ASharp2,
@@ -116,17 +116,17 @@ namespace YouBeatTypes {
             return MenuKey.None;
         }
 
-        private void changeMenuColour(int velo) {
+        private void ChangeMenuColour(int velo) {
             interf.massUpdateLEDsRectangle(0, 0, 8, 8, velo);
-            drawMenuKeys();
+            DrawMenuKeys();
         }
 
-        private void keyUp(object source, LaunchpadKeyEventArgs e) {
+        private void KeyUp(object source, LaunchpadKeyEventArgs e) {
             int x, y;
             x = e.GetX(); y = e.GetY();
             switch (state) {
                 case GameState.Menu:
-                    var menu = keyInMenuObject(x, y);
+                    var menu = KeyInMenuObject(x, y);
                     switch (menu) {
                         case MenuKey.LeftArrow:
                             _lArrowHeld = false;
@@ -143,12 +143,12 @@ namespace YouBeatTypes {
             }
         }
 
-        private void keyDown(object sender, LaunchpadKeyEventArgs e) {
+        private void KeyDown(object sender, LaunchpadKeyEventArgs e) {
             int x, y;
             x = e.GetX(); y = e.GetY();
             switch (state) {
                 case GameState.Menu:
-                    var menu = keyInMenuObject(x, y);
+                    var menu = KeyInMenuObject(x, y);
                     switch (menu) {
                         case MenuKey.LeftArrow:
                             if (velo == 0) {
@@ -156,9 +156,9 @@ namespace YouBeatTypes {
                             } else {
                                 velo--;
                             }
-                            changeMenuColour(velo);
+                            ChangeMenuColour(velo);
                             _lArrowHeld = true;
-                            paintLArrowHeld();
+                            PaintLArrowHeld();
                             SetPrevSong();
                             break;
                         case MenuKey.RightArrow:
@@ -167,9 +167,9 @@ namespace YouBeatTypes {
                             } else {
                                 velo++;
                             }
-                            changeMenuColour(velo);
+                            ChangeMenuColour(velo);
                             _rArrowHeld = true;
-                            paintRArrowHeld();                            
+                            PaintRArrowHeld();                            
                             SetNextSong();
                             break;
                         case MenuKey.Confim:
@@ -202,21 +202,21 @@ namespace YouBeatTypes {
             SetSong(Songs[idx]);
         }
 
-        private void paintRArrowHeld() {
+        private void PaintRArrowHeld() {
             //right arrow  
             List<int> xs = new List<int>() { 7, 7, 7, 7, 7, 6, 6, 5 };
             List<int> ys = new List<int>() { 3, 4, 5, 6, 7, 6, 7, 7 };            
             interf.massUpdateLEDs(xs, ys, ARROW_HELD_VELO, LightingMode.Pulse);
         }
 
-        private void paintLArrowHeld() {
+        private void PaintLArrowHeld() {
             //left arrow
             List<int> xs = new List<int>() { 0, 0, 0, 0, 0, 1, 1, 2 };
             List<int> ys = new List<int>() { 0, 1, 2, 3, 4, 0, 1, 0 };            
             interf.massUpdateLEDs(xs, ys, ARROW_HELD_VELO, LightingMode.Pulse);
         }
 
-        private void drawMenuKeys() {
+        private void DrawMenuKeys() {
             //left arrow
             List<int> xs = new List<int>() { 0, 0, 0, 0, 0, 1, 1, 2 };
             List<int> ys = new List<int>() { 0, 1, 2, 3, 4, 0, 1, 0 };            
@@ -267,7 +267,7 @@ namespace YouBeatTypes {
                     state = GameState.Menu;
                     break;
                 case GameState.Menu:
-                    drawMenuKeys();
+                    DrawMenuKeys();
 
                     break;
                 case GameState.Setup:
@@ -348,10 +348,10 @@ namespace YouBeatTypes {
                 var connected = interf.getConnectedLaunchpads();
                 if (connected.Count() > 0) {
                     if (interf.connect(connected[0])) {
-                        interf.OnLaunchpadKeyDown += keyDown;
-                        interf.OnLaunchpadKeyUp += keyUp;
-                        interf.OnLaunchpadCCKeyDown += ccKeyDown;
-                        interf.OnLaunchpadCCKeyUp += ccKeyUp;
+                        interf.OnLaunchpadKeyDown += KeyDown;
+                        interf.OnLaunchpadKeyUp += KeyUp;
+                        interf.OnLaunchpadCCKeyDown += CcKeyDown;
+                        interf.OnLaunchpadCCKeyUp += CcKeyUp;
                         interf.clearAllLEDs();
                     }
                 }
@@ -369,11 +369,11 @@ namespace YouBeatTypes {
             }            
         }        
 
-        private void ccKeyUp(object source, LaunchpadCCKeyEventArgs e) {
+        private void CcKeyUp(object source, LaunchpadCCKeyEventArgs e) {
             
         }
 
-        private void ccKeyDown(object source, LaunchpadCCKeyEventArgs e) {
+        private void CcKeyDown(object source, LaunchpadCCKeyEventArgs e) {
             
         }
 

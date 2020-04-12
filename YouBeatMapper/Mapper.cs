@@ -31,13 +31,13 @@ namespace YouBeatMapper {
 
         public Mapper() {
             InitializeComponent();
-            this.FormClosing += buttonStop_Click;
+            this.FormClosing += ButtonStop_Click;
             launchpad = new MapperLPInterf(); 
         }
 
         public Song CurrentSong { get; private set; }
 
-        private void loadSongToolStripMenuItem_Click(object sender, EventArgs e) {
+        private void LoadSongToolStripMenuItem_Click(object sender, EventArgs e) {
             if (fileDialogSongLoad.ShowDialog() == DialogResult.OK) {
                 SongFile = fileDialogSongLoad.FileName;
                 SongFolder = Path.Combine(Path.GetDirectoryName(SongFile), Path.GetFileNameWithoutExtension(SongFile));
@@ -62,8 +62,8 @@ namespace YouBeatMapper {
                 wvOut = new WaveOut();
                 wvOut.PlaybackStopped += OnPlaybackStopped;
                 wvOut.Init(audioFile);
-                launchpad.audioFile = audioFile;
-                launchpad.wvOut = wvOut;
+                launchpad.AudioFile = audioFile;
+                launchpad.WvOut = wvOut;
                 launchpad.CurrentSong = CurrentSong;
                 trackBar1.Value = 0;
                 timer1.Enabled = true;
@@ -109,7 +109,7 @@ namespace YouBeatMapper {
             }
         }
 
-        private void buttonPlay_Click(object sender, EventArgs e) {
+        private void ButtonPlay_Click(object sender, EventArgs e) {
             if (CurrentSong != null) {
                 if (audioFile == null)
                 {
@@ -129,11 +129,11 @@ namespace YouBeatMapper {
             if (closing) { wvOut.Dispose(); audioFile.Dispose(); }
         }
 
-        private void buttonStop_Click(object sender, EventArgs e) {
+        private void ButtonStop_Click(object sender, EventArgs e) {
             wvOut?.Stop();
         }
 
-        private void timer1_Tick(object sender, EventArgs e)
+        private void Timer1_Tick(object sender, EventArgs e)
         {
             if (audioFile != null)
             {
@@ -143,7 +143,7 @@ namespace YouBeatMapper {
             launchpad.UpdatePads();
         }
 
-        private void trackBar1_Scroll(object sender, EventArgs e)
+        private void TrackBar1_Scroll(object sender, EventArgs e)
         {
             if (audioFile != null)
             {
@@ -152,7 +152,7 @@ namespace YouBeatMapper {
             UpdateGrid();
         }
 
-        private void newSongToolStripMenuItem_Click(object sender, EventArgs e) {
+        private void NewSongToolStripMenuItem_Click(object sender, EventArgs e) {
             if (fileDialogNewSong.ShowDialog() == DialogResult.OK) {
                 SongFile = String.Empty;
                 SongFolder = Path.Combine(Path.GetDirectoryName(fileDialogNewSong.FileName), Path.GetFileNameWithoutExtension(fileDialogNewSong.FileName));
@@ -172,15 +172,15 @@ namespace YouBeatMapper {
                 wvOut = new WaveOut();
                 wvOut.PlaybackStopped += OnPlaybackStopped;
                 wvOut.Init(audioFile);
-                launchpad.audioFile = audioFile;
-                launchpad.wvOut = wvOut;
+                launchpad.AudioFile = audioFile;
+                launchpad.WvOut = wvOut;
                 launchpad.CurrentSong = CurrentSong;
                 timer1.Enabled = true;
                 trackBar1.Value = 0;
             }
         }
 
-        private void buttonClick(object sender, EventArgs e) {
+        private void ButtonClick(object sender, EventArgs e) {
             if (CurrentSong != null) {
                 var currTime = Convert.ToInt64(audioFile.CurrentTime.TotalMilliseconds);
                 var coords = tableLayoutPanel1.GetPositionFromControl((Control)sender);
@@ -194,22 +194,36 @@ namespace YouBeatMapper {
             }
         }
 
-        private void saveSong()
-        {
-            var json = JsonConvert.SerializeObject(CurrentSong);
-            File.WriteAllText(Path.Combine(SongFolder, $"{Path.GetFileNameWithoutExtension(SongFile)}.js"), json);
-            File.Delete(SongFile);
-            ZipFile.CreateFromDirectory(SongFolder, SongFile);
+        private void ValidateSong() {
+            if (CurrentSong == null) 
+                throw new SaveValidationException("No song is loaded!");            
+            if (CurrentSong.BPM < 40 || CurrentSong.BPM > 240)
+                throw new SaveValidationException("BPM set to an invalid value. BPM of song must be between 40 and 240 for the launchpad light pulse to function.");
+            if (!CurrentSong.Beats.Any())
+                throw new SaveValidationException("No beats in track.");
         }
 
-        private void saveAsToolStripMenuItem_Click(object sender, EventArgs e)
+        private void SaveSong()
+        {
+            try {
+                ValidateSong();
+                var json = JsonConvert.SerializeObject(CurrentSong);
+                File.WriteAllText(Path.Combine(SongFolder, $"{Path.GetFileNameWithoutExtension(SongFile)}.js"), json);
+                File.Delete(SongFile);
+                ZipFile.CreateFromDirectory(SongFolder, SongFile);
+            } catch (SaveValidationException e) {
+                MessageBox.Show("Your song has not been saved due to an error: " + e.Message, "Save validation error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+        }
+
+        private void SaveAsToolStripMenuItem_Click(object sender, EventArgs e)
         {
             if (CurrentSong != null)
             {
                 if (saveFileDialog1.ShowDialog() == DialogResult.OK)
                 {
                     SongFile = saveFileDialog1.FileName;
-                    saveSong();
+                    SaveSong();
                 }
             } else
             {
@@ -217,13 +231,13 @@ namespace YouBeatMapper {
             }
         }
 
-        private void saveToolStripMenuItem_Click(object sender, EventArgs e)
+        private void SaveToolStripMenuItem_Click(object sender, EventArgs e)
         {
             if (String.IsNullOrWhiteSpace(SongFile))
-                saveAsToolStripMenuItem_Click(sender, e);
+                SaveAsToolStripMenuItem_Click(sender, e);
             else if (CurrentSong != null)
             {
-                saveSong();
+                SaveSong();
             }
         }
     }

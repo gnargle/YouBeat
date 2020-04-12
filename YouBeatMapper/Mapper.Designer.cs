@@ -88,14 +88,14 @@
             this.newSongToolStripMenuItem.Name = "newSongToolStripMenuItem";
             this.newSongToolStripMenuItem.Size = new System.Drawing.Size(130, 22);
             this.newSongToolStripMenuItem.Text = "New Song";
-            this.newSongToolStripMenuItem.Click += new System.EventHandler(this.newSongToolStripMenuItem_Click);
+            this.newSongToolStripMenuItem.Click += new System.EventHandler(this.NewSongToolStripMenuItem_Click);
             // 
             // loadSongToolStripMenuItem
             // 
             this.loadSongToolStripMenuItem.Name = "loadSongToolStripMenuItem";
             this.loadSongToolStripMenuItem.Size = new System.Drawing.Size(130, 22);
             this.loadSongToolStripMenuItem.Text = "Load Song";
-            this.loadSongToolStripMenuItem.Click += new System.EventHandler(this.loadSongToolStripMenuItem_Click);
+            this.loadSongToolStripMenuItem.Click += new System.EventHandler(this.LoadSongToolStripMenuItem_Click);
             // 
             // fileDialogSongLoad
             // 
@@ -144,7 +144,7 @@
             this.b3.Size = new System.Drawing.Size(137, 137);
             this.b3.TabIndex = 15;
             this.b3.UseVisualStyleBackColor = false;
-            this.b3.Click += new System.EventHandler(this.buttonClick);
+            this.b3.Click += new System.EventHandler(this.ButtonClick);
             // 
             // b23
             // 
@@ -155,7 +155,7 @@
             this.b23.Size = new System.Drawing.Size(136, 137);
             this.b23.TabIndex = 14;
             this.b23.UseVisualStyleBackColor = false;
-            this.b23.Click += new System.EventHandler(this.buttonClick);
+            this.b23.Click += new System.EventHandler(this.ButtonClick);
             // 
             // b13
             // 
@@ -166,7 +166,7 @@
             this.b13.Size = new System.Drawing.Size(136, 137);
             this.b13.TabIndex = 13;
             this.b13.UseVisualStyleBackColor = false;
-            this.b13.Click += new System.EventHandler(this.buttonClick);
+            this.b13.Click += new System.EventHandler(this.ButtonClick);
             // 
             // b03
             // 
@@ -177,7 +177,7 @@
             this.b03.Size = new System.Drawing.Size(136, 137);
             this.b03.TabIndex = 12;
             this.b03.UseVisualStyleBackColor = false;
-            this.b03.Click += new System.EventHandler(this.buttonClick);
+            this.b03.Click += new System.EventHandler(this.ButtonClick);
             // 
             // b33
             // 
@@ -188,7 +188,7 @@
             this.b33.Size = new System.Drawing.Size(137, 136);
             this.b33.TabIndex = 11;
             this.b33.UseVisualStyleBackColor = false;
-            this.b33.Click += new System.EventHandler(this.buttonClick);
+            this.b33.Click += new System.EventHandler(this.ButtonClick);
             // 
             // b22
             // 
@@ -199,7 +199,7 @@
             this.b22.Size = new System.Drawing.Size(136, 136);
             this.b22.TabIndex = 10;
             this.b22.UseVisualStyleBackColor = false;
-            this.b22.Click += new System.EventHandler(this.buttonClick);
+            this.b22.Click += new System.EventHandler(this.ButtonClick);
             // 
             // b12
             // 
@@ -210,7 +210,7 @@
             this.b12.Size = new System.Drawing.Size(136, 136);
             this.b12.TabIndex = 9;
             this.b12.UseVisualStyleBackColor = false;
-            this.b12.Click += new System.EventHandler(this.buttonClick);
+            this.b12.Click += new System.EventHandler(this.ButtonClick);
             // 
             // b02
             // 
@@ -221,7 +221,7 @@
             this.b02.Size = new System.Drawing.Size(136, 136);
             this.b02.TabIndex = 8;
             this.b02.UseVisualStyleBackColor = false;
-            this.b02.Click += new System.EventHandler(this.buttonClick);
+            this.b02.Click += new System.EventHandler(this.ButtonClick);
             // 
             // b31
             // 
@@ -232,7 +232,7 @@
             this.b31.Size = new System.Drawing.Size(137, 136);
             this.b31.TabIndex = 7;
             this.b31.UseVisualStyleBackColor = false;
-            this.b31.Click += new System.EventHandler(this.buttonClick);
+            this.b31.Click += new System.EventHandler(this.ButtonClick);
             // 
             // b21
             // 
@@ -243,7 +243,7 @@
             this.b21.Size = new System.Drawing.Size(136, 136);
             this.b21.TabIndex = 6;
             this.b21.UseVisualStyleBackColor = false;
-            this.b21.Click += new System.EventHandler(this.buttonClick);
+            this.b21.Click += new System.EventHandler(this.ButtonClick);
             // 
             // b11
             // 
@@ -254,7 +254,7 @@
             this.b11.Size = new System.Drawing.Size(136, 136);
             this.b11.TabIndex = 5;
             this.b11.UseVisualStyleBackColor = false;
-            this.b11.Click += new System.EventHandler(this.buttonClick);
+            this.b11.Click += new System.EventHandler(this.ButtonClick);
             // 
             // b01
             // 
@@ -265,7 +265,7 @@
             this.b01.Size = new System.Drawing.Size(136, 136);
             this.b01.TabIndex = 4;
             this.b01.UseVisualStyleBackColor = false;
-            this.b01.Click += new System.EventHandler(this.buttonClick);
+            this.b01.Click += new System.EventHandler(this.ButtonClick);
             // 
             // b30
             // 
@@ -276,7 +276,7 @@
             this.b30.Size = new System.Drawing.Size(137, 136);
             this.b30.TabIndex = 3;
             this.b30.UseVisualStyleBackColor = false;
-            this.b30.Click += new System.EventHandler(this.buttonClick);
+            this.b30.Click += new System.EventHandler(this.ButtonClick);
             // 
             // b20
             // 
@@ -287,7 +287,7 @@
             this.b20.Size = new System.Drawing.Size(136, 136);
             this.b20.TabIndex = 2;
             this.b20.UseVisualStyleBackColor = false;
-            this.b20.Click += new System.EventHandler(this.buttonClick);
+            this.b20.Click += new System.EventHandler(this.ButtonClick);
             // 
             // b10
             // 
@@ -298,7 +298,7 @@
             this.b10.Size = new System.Drawing.Size(136, 136);
             this.b10.TabIndex = 1;
             this.b10.UseVisualStyleBackColor = false;
-            this.b10.Click += new System.EventHandler(this.buttonClick);
+            this.b10.Click += new System.EventHandler(this.ButtonClick);
             // 
             // b00
             // 
@@ -309,7 +309,7 @@
             this.b00.Size = new System.Drawing.Size(136, 136);
             this.b00.TabIndex = 0;
             this.b00.UseVisualStyleBackColor = false;
-            this.b00.Click += new System.EventHandler(this.buttonClick);
+            this.b00.Click += new System.EventHandler(this.ButtonClick);
             // 
             // panel17
             // 
@@ -332,7 +332,7 @@
             this.trackBar1.Name = "trackBar1";
             this.trackBar1.Size = new System.Drawing.Size(1097, 45);
             this.trackBar1.TabIndex = 3;
-            this.trackBar1.Scroll += new System.EventHandler(this.trackBar1_Scroll);
+            this.trackBar1.Scroll += new System.EventHandler(this.TrackBar1_Scroll);
             // 
             // buttonStop
             // 
@@ -344,7 +344,7 @@
             this.buttonStop.TabIndex = 1;
             this.buttonStop.Text = "Stop";
             this.buttonStop.UseVisualStyleBackColor = false;
-            this.buttonStop.Click += new System.EventHandler(this.buttonStop_Click);
+            this.buttonStop.Click += new System.EventHandler(this.ButtonStop_Click);
             // 
             // buttonPlay
             // 
@@ -356,11 +356,11 @@
             this.buttonPlay.TabIndex = 0;
             this.buttonPlay.Text = "Play";
             this.buttonPlay.UseVisualStyleBackColor = false;
-            this.buttonPlay.Click += new System.EventHandler(this.buttonPlay_Click);
+            this.buttonPlay.Click += new System.EventHandler(this.ButtonPlay_Click);
             // 
             // timer1
             // 
-            this.timer1.Tick += new System.EventHandler(this.timer1_Tick);
+            this.timer1.Tick += new System.EventHandler(this.Timer1_Tick);
             // 
             // fileDialogNewSong
             // 
@@ -379,14 +379,14 @@
             this.saveAsToolStripMenuItem.Name = "saveAsToolStripMenuItem";
             this.saveAsToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
             this.saveAsToolStripMenuItem.Text = "Save As...";
-            this.saveAsToolStripMenuItem.Click += new System.EventHandler(this.saveAsToolStripMenuItem_Click);
+            this.saveAsToolStripMenuItem.Click += new System.EventHandler(this.SaveAsToolStripMenuItem_Click);
             // 
             // saveToolStripMenuItem
             // 
             this.saveToolStripMenuItem.Name = "saveToolStripMenuItem";
             this.saveToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
             this.saveToolStripMenuItem.Text = "Save";
-            this.saveToolStripMenuItem.Click += new System.EventHandler(this.saveToolStripMenuItem_Click);
+            this.saveToolStripMenuItem.Click += new System.EventHandler(this.SaveToolStripMenuItem_Click);
             // 
             // saveFileDialog1
             // 
