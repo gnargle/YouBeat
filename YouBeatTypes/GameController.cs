@@ -49,7 +49,6 @@ namespace YouBeatTypes {
         private object ComboLock = new object();
         private object ScoreLock = new object();
 
-        private Timer _leadInTimer;
         private System.Media.SoundPlayer hitSound = new System.Media.SoundPlayer("FX\\Blip_Perfect.wav");
 
         public void AddToScore(long moreScore) {
@@ -318,12 +317,7 @@ namespace YouBeatTypes {
                     Combo = 0;
                     MaxCombo = 0;
                     Score = 0;
-                    SetSong(CurrentSong, false, true);
-                    _leadInTimer = new Timer(3000) {
-                        AutoReset = false                        
-                    };
-                    _leadInTimer.Elapsed += _leadInTimer_Elapsed;
-                    _leadInTimer.Start();              
+                    SetSong(CurrentSong);  
                     State = GameState.Game;
                     break;
                 case GameState.Game:
@@ -430,25 +424,15 @@ namespace YouBeatTypes {
             }
         }
 
-        private void SetSong(Song newSong, bool play = true, bool addLeadIn = false) {
+        private void SetSong(Song newSong) {
             StopSong();
             CurrentSong = newSong;
             interf.setClock(CurrentSong.BPM);
             var path = Path.Combine(Directory.GetCurrentDirectory(), "Songs", CurrentSong.SongName, CurrentSong.FileName);
-            audioFile = new MediaFoundationReader(path);
-            if (addLeadIn) {
-                //var offset = new OffsetSampleProvider(audioFile.ToSampleProvider());
-                //offset.DelayBy = TimeSpan.FromSeconds(CurrentSong.LeadInTime);
-                //audioFile = (MediaFoundationReader)offset.ToWaveProvider();
-                //offsets the file, but then we can't get time played at present. Need to fix.
-                outputDevice = new WaveOutEvent();
-                outputDevice.Init(audioFile);
-            } else {
-                outputDevice = new WaveOutEvent();
-                outputDevice.Init(audioFile);
-            }            
-            if (play)
-                outputDevice.Play();            
+            audioFile = new MediaFoundationReader(path);            
+            outputDevice = new WaveOutEvent();
+            outputDevice.Init(audioFile);                    
+            outputDevice.Play();            
             outputDevice.PlaybackStopped += OutputDevice_PlaybackStopped;
         }
 

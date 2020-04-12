@@ -55,7 +55,8 @@ namespace YouBeatMapper {
                     Title = tfile.Tag.Title,
                     Artist = tfile.Tag.FirstPerformer,
                     BPM = (int)tfile.Tag.BeatsPerMinute,
-                    SongName = Path.GetFileNameWithoutExtension(fileDialogNewSong.FileName)
+                    SongName = Path.GetFileNameWithoutExtension(fileDialogNewSong.FileName),
+                    LeadInTime = 1
                 };
                 cbDifficulty.SelectedIndex = 1;
                 cbDifficulty_SelectedIndexChanged(cbDifficulty, null);
@@ -73,47 +74,50 @@ namespace YouBeatMapper {
             }
         }
 
+        private void LoadSong(string filename) {
+            SongFile = filename;
+            SongFolder = Path.Combine(Path.GetDirectoryName(SongFile), Path.GetFileNameWithoutExtension(SongFile));
+            if (Directory.Exists(SongFolder))
+                Directory.Delete(SongFolder, true);
+            ZipFile.ExtractToDirectory(SongFile, SongFolder);
+            foreach (var tempFile in Directory.GetFiles(SongFolder)) {
+                if (tempFile.EndsWith(".js"))
+                    continue;
+                else if (tempFile.EndsWith(".jpg") || tempFile.EndsWith(".png", StringComparison.InvariantCultureIgnoreCase))
+                    ImageFileName = tempFile;
+                else
+                    AudioFileName = tempFile;
+            }
+            //var zip = ZipFile.OpenRead(SongFile);
+            var file = Path.Combine(SongFolder, Path.GetFileNameWithoutExtension(filename) + ".js");
+            var json = File.ReadAllText(file);
+            CurrentSong = JsonConvert.DeserializeObject<Song>(json);
+            if (CurrentSong.EasyBeats == null) {
+                CurrentSong.EasyBeats = new List<Beat>();
+            }
+            if (CurrentSong.AdvancedBeats == null) {
+                CurrentSong.AdvancedBeats = new List<Beat>();
+            }
+            if (CurrentSong.ExpertBeats == null) {
+                CurrentSong.ExpertBeats = new List<Beat>();
+            }
+            cbDifficulty.SelectedIndex = 1;
+            cbDifficulty_SelectedIndexChanged(cbDifficulty, null);
+            pgCurrentSong.SelectedObject = CurrentSong;
+            audioFile = new MediaFoundationReader(AudioFileName);
+            wvOut = new WaveOut();
+            wvOut.PlaybackStopped += OnPlaybackStopped;
+            wvOut.Init(audioFile);
+            launchpad.AudioFile = audioFile;
+            launchpad.WvOut = wvOut;
+            launchpad.CurrentSong = CurrentSong;
+            trackBar1.Value = 0;
+            timer1.Enabled = true;
+        }
+
         private void LoadSongToolStripMenuItem_Click(object sender, EventArgs e) {
             if (fileDialogSongLoad.ShowDialog() == DialogResult.OK) {
-                SongFile = fileDialogSongLoad.FileName;
-                SongFolder = Path.Combine(Path.GetDirectoryName(SongFile), Path.GetFileNameWithoutExtension(SongFile));
-                if (Directory.Exists(SongFolder))
-                    Directory.Delete(SongFolder, true);
-                ZipFile.ExtractToDirectory(SongFile, SongFolder);
-                foreach (var tempFile in Directory.GetFiles(SongFolder))
-                {
-                    if (tempFile.EndsWith(".js"))
-                        continue;
-                    else if (tempFile.EndsWith(".jpg") || tempFile.EndsWith(".png", StringComparison.InvariantCultureIgnoreCase))
-                        ImageFileName = tempFile;
-                    else
-                        AudioFileName = tempFile;
-                }
-                //var zip = ZipFile.OpenRead(SongFile);
-                var file = Path.Combine(SongFolder, Path.GetFileNameWithoutExtension(fileDialogSongLoad.FileName) + ".js");
-                var json = File.ReadAllText(file);
-                CurrentSong = JsonConvert.DeserializeObject<Song>(json);
-                if (CurrentSong.EasyBeats == null) {
-                    CurrentSong.EasyBeats = new List<Beat>();
-                }
-                if (CurrentSong.AdvancedBeats == null) {
-                    CurrentSong.AdvancedBeats = new List<Beat>();
-                }
-                if (CurrentSong.ExpertBeats == null) {
-                    CurrentSong.ExpertBeats = new List<Beat>();
-                }
-                cbDifficulty.SelectedIndex = 1;
-                cbDifficulty_SelectedIndexChanged(cbDifficulty, null);
-                pgCurrentSong.SelectedObject = CurrentSong;
-                audioFile = new MediaFoundationReader(AudioFileName);
-                wvOut = new WaveOut();
-                wvOut.PlaybackStopped += OnPlaybackStopped;
-                wvOut.Init(audioFile);
-                launchpad.AudioFile = audioFile;
-                launchpad.WvOut = wvOut;
-                launchpad.CurrentSong = CurrentSong;
-                trackBar1.Value = 0;
-                timer1.Enabled = true;
+                LoadSong(fileDialogSongLoad.FileName);
             }
         }
 
@@ -220,22 +224,44 @@ namespace YouBeatMapper {
                 throw new SaveValidationException("BPM set to an invalid value. BPM of song must be between 40 and 240 for the launchpad light pulse to function.");
             if (!CurrentBeats.Any())
                 throw new SaveValidationException("No beats in current difficulty track.");
+            if (CurrentSong.LeadInTime < 1) {
+                throw new SaveValidationException("You must have a lead-in time of at least a second.");
+            }
         }
 
         private void SaveSong()
         {
             try {
+                bool reload = false;
                 ValidateSong();
                 //might need to generate the lead in time here and add the lead in time to every note...
-                /*if (!CurrentSong.LeadInTimeGenerated) {
+               if (!CurrentSong.LeadInTimeGenerated) {
+                    audioFile.Position = 0; //reset position else we'll just offset everything to where it left playing
                     var offset = new OffsetSampleProvider(audioFile.ToSampleProvider());
                     offset.DelayBy = TimeSpan.FromSeconds(CurrentSong.LeadInTime);
-                    audioFile = (MediaFoundationReader)offset.ToWaveProvider();
-                }*/
+                    var tempFileName = Path.Combine(SongFolder, Path.GetFileNameWithoutExtension(CurrentSong.FileName) + "extend" + Path.GetExtension(CurrentSong.FileName));
+                    WaveFileWriter.CreateWaveFile(tempFileName, offset.ToWaveProvider());
+                    File.Delete(Path.Combine(SongFolder, CurrentSong.FileName));
+                    File.Move(tempFileName, Path.Combine(SongFolder, CurrentSong.FileName));
+                    foreach (var beat in CurrentSong.EasyBeats) {
+                        beat.HitTime += CurrentSong.LeadInTime * 1000;
+                    }
+                    foreach (var beat in CurrentSong.AdvancedBeats) {
+                        beat.HitTime += CurrentSong.LeadInTime * 1000;
+                    }
+                    foreach (var beat in CurrentSong.ExpertBeats) {
+                        beat.HitTime += CurrentSong.LeadInTime * 1000;
+                    }
+                    CurrentSong.LeadInTimeGenerated = true;
+                    reload = true; //need to reload to account for the new offset.
+                }
                 var json = JsonConvert.SerializeObject(CurrentSong);
                 File.WriteAllText(Path.Combine(SongFolder, $"{Path.GetFileNameWithoutExtension(SongFile)}.js"), json);
                 File.Delete(SongFile);
                 ZipFile.CreateFromDirectory(SongFolder, SongFile);
+                if (reload) {
+                    LoadSong(SongFile);
+                }
             } catch (SaveValidationException e) {
                 MessageBox.Show("Your song has not been saved due to an error: " + e.Message, "Save validation error", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
