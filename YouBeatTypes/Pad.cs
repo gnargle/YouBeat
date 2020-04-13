@@ -70,9 +70,10 @@ namespace YouBeatTypes
         public void RegisterHit() {
             var time = _controller.Elapsed;          
             if (CurrentBeat != null) {
-                var denom = CurrentBeat.HitTime - time;
-                if (denom == 0) denom = 1; //if you someone manage to match the note exactly, get the full amount
-                var score = Convert.ToInt64(Math.Abs(2500-denom*.01*(_controller.Separation * 5)));
+                var denom = Math.Abs(CurrentBeat.HitTime - time);
+                //if (denom == 0) denom = 1; //if you someone manage to match the note exactly, get the full amount
+                var score = Convert.ToInt64(Math.Abs((_controller.Separation*5*2)-denom*2));
+                if (score < 0) score = 0;
                 //scoring is STILL wrong, it gives you more points for being off rhythm
                 switch (_currentVelo) {
                     case ScoreVelo.Bad:

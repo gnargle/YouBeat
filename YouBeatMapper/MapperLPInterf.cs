@@ -19,6 +19,7 @@ namespace YouBeatMapper {
         public List<Beat> CurrentBeats { get; set; }
         public MediaFoundationReader AudioFile { get; set; }
         public WaveOut WvOut { get; set; }
+        public const int BEAT_DUR = 250;
 
         public MapperLPInterf() {
             controller = new GameController(true);
@@ -58,10 +59,9 @@ namespace YouBeatMapper {
             pad.MapperPressed = true;
             if (CurrentSong != null) {
                 var currTime = Convert.ToInt64(AudioFile.CurrentTime.TotalMilliseconds);
-                var existingBeat = CurrentBeats.Where(b => (b.HitTime <= currTime + 125) && (b.HitTime >= currTime - 125) && b.x == coords.Item1 && b.y == coords.Item2).FirstOrDefault();
-                if (existingBeat != null) {
-                    CurrentBeats.Remove(existingBeat);
-                } else {
+                var existingBeat = CurrentBeats.Where(b => (b.HitTime <= currTime + BEAT_DUR) && (b.HitTime >= currTime - BEAT_DUR) && b.x == coords.Item1 && b.y == coords.Item2).FirstOrDefault();
+                if (existingBeat == null) {
+                    //check for debounce, don't accidentally double up on beats.
                     var newBeat = new Beat(currTime, coords.Item1, coords.Item2);
                     CurrentBeats.Add(newBeat);
                 }

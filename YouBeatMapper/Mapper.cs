@@ -31,9 +31,7 @@ namespace YouBeatMapper {
         private MapperLPInterf launchpad;
         private List<Beat> CurrentBeats;
         private Beat SelectedBeat;
-        public Song CurrentSong { get; private set; }
-
-        private const int BEAT_DUR = 250;
+        public Song CurrentSong { get; private set; }        
 
         public Mapper() {
             InitializeComponent();
@@ -45,77 +43,87 @@ namespace YouBeatMapper {
         
         private void NewSongToolStripMenuItem_Click(object sender, EventArgs e) {
             if (fileDialogNewSong.ShowDialog() == DialogResult.OK) {
-                SongFile = String.Empty;
-                SongFolder = Path.Combine(Path.GetDirectoryName(fileDialogNewSong.FileName), Path.GetFileNameWithoutExtension(fileDialogNewSong.FileName));
-                Directory.CreateDirectory(SongFolder);
-                File.Copy(fileDialogNewSong.FileName, Path.Combine(SongFolder, Path.GetFileName(fileDialogNewSong.FileName)), true);//drop audio into folder for later
-                var tfile = TagLib.File.Create(fileDialogNewSong.FileName);
-                CurrentSong = new Song() {
-                    FileName = Path.GetFileName(fileDialogNewSong.FileName),
-                    EasyBeats = new List<Beat>(),
-                    AdvancedBeats = new List<Beat>(),
-                    ExpertBeats = new List<Beat>(),
-                    Title = tfile.Tag.Title,
-                    Artist = tfile.Tag.FirstPerformer,
-                    BPM = (int)tfile.Tag.BeatsPerMinute,
-                    SongName = Path.GetFileNameWithoutExtension(fileDialogNewSong.FileName),
-                    LeadInTime = 1
-                };
+                try {
+                    Cursor.Current = Cursors.WaitCursor;
+                    SongFile = String.Empty;
+                    SongFolder = Path.Combine(Path.GetDirectoryName(fileDialogNewSong.FileName), Path.GetFileNameWithoutExtension(fileDialogNewSong.FileName));
+                    Directory.CreateDirectory(SongFolder);
+                    File.Copy(fileDialogNewSong.FileName, Path.Combine(SongFolder, Path.GetFileName(fileDialogNewSong.FileName)), true);//drop audio into folder for later
+                    var tfile = TagLib.File.Create(fileDialogNewSong.FileName);
+                    CurrentSong = new Song() {
+                        FileName = Path.GetFileName(fileDialogNewSong.FileName),
+                        EasyBeats = new List<Beat>(),
+                        AdvancedBeats = new List<Beat>(),
+                        ExpertBeats = new List<Beat>(),
+                        Title = tfile.Tag.Title,
+                        Artist = tfile.Tag.FirstPerformer,
+                        BPM = (int)tfile.Tag.BeatsPerMinute,
+                        SongName = Path.GetFileNameWithoutExtension(fileDialogNewSong.FileName),
+                        LeadInTime = 1
+                    };
+                    cbDifficulty.SelectedIndex = 1;
+                    cbDifficulty_SelectedIndexChanged(cbDifficulty, null);
+                    CurrentBeats = CurrentSong.AdvancedBeats;
+                    pgCurrentSong.SelectedObject = CurrentSong;
+                    audioFile = new MediaFoundationReader(Path.Combine(SongFolder, Path.GetFileName(fileDialogNewSong.FileName)));
+                    wvOut = new WaveOut();
+                    wvOut.PlaybackStopped += OnPlaybackStopped;
+                    wvOut.Init(audioFile);
+                    launchpad.AudioFile = audioFile;
+                    launchpad.WvOut = wvOut;
+                    launchpad.CurrentSong = CurrentSong;
+                    timer1.Enabled = true;
+                    tbMusic.Value = 0;
+                } finally {
+                    Cursor.Current = Cursors.Default;
+                }
+            }
+        }
+
+        private void LoadSong(string filename) {
+            try {
+                Cursor.Current = Cursors.WaitCursor;
+                SongFile = filename;
+                SongFolder = Path.Combine(Path.GetDirectoryName(SongFile), Path.GetFileNameWithoutExtension(SongFile));
+                if (Directory.Exists(SongFolder))
+                    Directory.Delete(SongFolder, true);
+                ZipFile.ExtractToDirectory(SongFile, SongFolder);
+                foreach (var tempFile in Directory.GetFiles(SongFolder)) {
+                    if (tempFile.EndsWith(".js"))
+                        continue;
+                    else if (tempFile.EndsWith(".jpg") || tempFile.EndsWith(".png", StringComparison.InvariantCultureIgnoreCase))
+                        ImageFileName = tempFile;
+                    else
+                        AudioFileName = tempFile;
+                }
+                //var zip = ZipFile.OpenRead(SongFile);
+                var file = Path.Combine(SongFolder, Path.GetFileNameWithoutExtension(filename) + ".js");
+                var json = File.ReadAllText(file);
+                CurrentSong = JsonConvert.DeserializeObject<Song>(json);
+                if (CurrentSong.EasyBeats == null) {
+                    CurrentSong.EasyBeats = new List<Beat>();
+                }
+                if (CurrentSong.AdvancedBeats == null) {
+                    CurrentSong.AdvancedBeats = new List<Beat>();
+                }
+                if (CurrentSong.ExpertBeats == null) {
+                    CurrentSong.ExpertBeats = new List<Beat>();
+                }
                 cbDifficulty.SelectedIndex = 1;
                 cbDifficulty_SelectedIndexChanged(cbDifficulty, null);
-                CurrentBeats = CurrentSong.AdvancedBeats;
                 pgCurrentSong.SelectedObject = CurrentSong;
-                audioFile = new MediaFoundationReader(Path.Combine(SongFolder, Path.GetFileName(fileDialogNewSong.FileName)));
+                audioFile = new MediaFoundationReader(AudioFileName);
                 wvOut = new WaveOut();
                 wvOut.PlaybackStopped += OnPlaybackStopped;
                 wvOut.Init(audioFile);
                 launchpad.AudioFile = audioFile;
                 launchpad.WvOut = wvOut;
                 launchpad.CurrentSong = CurrentSong;
-                timer1.Enabled = true;
                 tbMusic.Value = 0;
+                timer1.Enabled = true;
+            } finally {
+                Cursor.Current = Cursors.Default;
             }
-        }
-
-        private void LoadSong(string filename) {
-            SongFile = filename;
-            SongFolder = Path.Combine(Path.GetDirectoryName(SongFile), Path.GetFileNameWithoutExtension(SongFile));
-            if (Directory.Exists(SongFolder))
-                Directory.Delete(SongFolder, true);
-            ZipFile.ExtractToDirectory(SongFile, SongFolder);
-            foreach (var tempFile in Directory.GetFiles(SongFolder)) {
-                if (tempFile.EndsWith(".js"))
-                    continue;
-                else if (tempFile.EndsWith(".jpg") || tempFile.EndsWith(".png", StringComparison.InvariantCultureIgnoreCase))
-                    ImageFileName = tempFile;
-                else
-                    AudioFileName = tempFile;
-            }
-            //var zip = ZipFile.OpenRead(SongFile);
-            var file = Path.Combine(SongFolder, Path.GetFileNameWithoutExtension(filename) + ".js");
-            var json = File.ReadAllText(file);
-            CurrentSong = JsonConvert.DeserializeObject<Song>(json);
-            if (CurrentSong.EasyBeats == null) {
-                CurrentSong.EasyBeats = new List<Beat>();
-            }
-            if (CurrentSong.AdvancedBeats == null) {
-                CurrentSong.AdvancedBeats = new List<Beat>();
-            }
-            if (CurrentSong.ExpertBeats == null) {
-                CurrentSong.ExpertBeats = new List<Beat>();
-            }
-            cbDifficulty.SelectedIndex = 1;
-            cbDifficulty_SelectedIndexChanged(cbDifficulty, null);
-            pgCurrentSong.SelectedObject = CurrentSong;
-            audioFile = new MediaFoundationReader(AudioFileName);
-            wvOut = new WaveOut();
-            wvOut.PlaybackStopped += OnPlaybackStopped;
-            wvOut.Init(audioFile);
-            launchpad.AudioFile = audioFile;
-            launchpad.WvOut = wvOut;
-            launchpad.CurrentSong = CurrentSong;
-            tbMusic.Value = 0;
-            timer1.Enabled = true;
         }
 
         private void LoadSongToolStripMenuItem_Click(object sender, EventArgs e) {
@@ -135,8 +143,8 @@ namespace YouBeatMapper {
             {
                 //these aren't right rn
                 var currTime = Convert.ToInt64(audioFile.CurrentTime.TotalMilliseconds);
-                var activeBeats = CurrentBeats.Where(b => (b.HitTime <= currTime + BEAT_DUR) && (b.HitTime >= currTime - BEAT_DUR));
-                var inactiveBeats = CurrentBeats.Where(b => (b.HitTime <= currTime - BEAT_DUR) ||  (b.HitTime >= currTime + BEAT_DUR));
+                var activeBeats = CurrentBeats.Where(b => (b.HitTime <= currTime + MapperLPInterf.BEAT_DUR) && (b.HitTime >= currTime - MapperLPInterf.BEAT_DUR));
+                var inactiveBeats = CurrentBeats.Where(b => (b.HitTime <= currTime - MapperLPInterf.BEAT_DUR) ||  (b.HitTime >= currTime + MapperLPInterf.BEAT_DUR));
                 List<Button> ctlsSeen = new List<Button>();
                 foreach (var beat in activeBeats) {
                     var ctl = (Button)tableLayoutPanel1.GetControlFromPosition(beat.y, beat.x);
@@ -242,8 +250,9 @@ namespace YouBeatMapper {
         private void SaveSong()
         {
             try {
+                Cursor.Current = Cursors.WaitCursor;
                 bool reload = false;
-                ValidateSong();
+                ValidateSong();                
                 //might need to generate the lead in time here and add the lead in time to every note...
                if (!CurrentSong.LeadInTimeGenerated) {
                     audioFile.Position = 0; //reset position else we'll just offset everything to where it left playing
@@ -274,6 +283,8 @@ namespace YouBeatMapper {
                 }
             } catch (SaveValidationException e) {
                 MessageBox.Show("Your song has not been saved due to an error: " + e.Message, "Save validation error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            } finally {
+                Cursor.Current = Cursors.Default;
             }
         }
 
