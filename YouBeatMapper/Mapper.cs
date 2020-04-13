@@ -30,7 +30,10 @@ namespace YouBeatMapper {
         private bool closing = false;       
         private MapperLPInterf launchpad;
         private List<Beat> CurrentBeats;
+        private Beat SelectedBeat;
         public Song CurrentSong { get; private set; }
+
+        private const int BEAT_DUR = 250;
 
         public Mapper() {
             InitializeComponent();
@@ -70,7 +73,7 @@ namespace YouBeatMapper {
                 launchpad.WvOut = wvOut;
                 launchpad.CurrentSong = CurrentSong;
                 timer1.Enabled = true;
-                trackBar1.Value = 0;
+                tbMusic.Value = 0;
             }
         }
 
@@ -111,7 +114,7 @@ namespace YouBeatMapper {
             launchpad.AudioFile = audioFile;
             launchpad.WvOut = wvOut;
             launchpad.CurrentSong = CurrentSong;
-            trackBar1.Value = 0;
+            tbMusic.Value = 0;
             timer1.Enabled = true;
         }
 
@@ -123,7 +126,7 @@ namespace YouBeatMapper {
 
         private void UpdatePosition()
         {
-            trackBar1.Value = Math.Min((int)((trackBar1.Maximum * audioFile.Position) / audioFile.Length), trackBar1.Maximum);
+            tbMusic.Value = Math.Min((int)((tbMusic.Maximum * audioFile.Position) / audioFile.Length), tbMusic.Maximum);
         }
 
         private void UpdateGrid()
@@ -132,8 +135,8 @@ namespace YouBeatMapper {
             {
                 //these aren't right rn
                 var currTime = Convert.ToInt64(audioFile.CurrentTime.TotalMilliseconds);
-                var activeBeats = CurrentBeats.Where(b => (b.HitTime <= currTime + 125) && (b.HitTime >= currTime - 125));
-                var inactiveBeats = CurrentBeats.Where(b => (b.HitTime <= currTime - 125) ||  (b.HitTime >= currTime + 125));
+                var activeBeats = CurrentBeats.Where(b => (b.HitTime <= currTime + BEAT_DUR) && (b.HitTime >= currTime - BEAT_DUR));
+                var inactiveBeats = CurrentBeats.Where(b => (b.HitTime <= currTime - BEAT_DUR) ||  (b.HitTime >= currTime + BEAT_DUR));
                 List<Button> ctlsSeen = new List<Button>();
                 foreach (var beat in activeBeats) {
                     var ctl = (Button)tableLayoutPanel1.GetControlFromPosition(beat.y, beat.x);
@@ -192,16 +195,22 @@ namespace YouBeatMapper {
             }
             UpdateGrid();
             launchpad.UpdatePads();
+            lTimeUpdater.Text = audioFile?.CurrentTime.TotalMilliseconds.ToString();
         }
 
         private void TrackBar1_Scroll(object sender, EventArgs e)
         {
             if (audioFile != null)
             {
-                audioFile.Position = (trackBar1.Value * audioFile.Length) / trackBar1.Maximum;
+                audioFile.Position = (tbMusic.Value * audioFile.Length) / tbMusic.Maximum;
             }
             UpdateGrid();
-        }        
+        }
+        
+        private void AssignBeat(Beat beat) {
+            SelectedBeat = beat;
+            pgCurrentBeat.SelectedObject = beat;
+        }
 
         private void ButtonClick(object sender, EventArgs e) {
             if (CurrentSong != null) {
@@ -209,9 +218,10 @@ namespace YouBeatMapper {
                 var coords = tableLayoutPanel1.GetPositionFromControl((Control)sender);
                 var existingBeat = CurrentBeats.Where(b => (b.HitTime <= currTime + 125) && (b.HitTime >= currTime - 125) && b.x == coords.Row && b.y == coords.Column).FirstOrDefault();
                 if (existingBeat != null) {
-                    CurrentBeats.Remove(existingBeat);
+                    AssignBeat(existingBeat);               
                 } else {
                     var newBeat = new Beat(currTime, coords.Row, coords.Column);
+                    AssignBeat(newBeat);
                     CurrentBeats.Add(newBeat);
                 }
             }
@@ -301,6 +311,13 @@ namespace YouBeatMapper {
                 else
                     CurrentBeats = CurrentSong.ExpertBeats;
                 launchpad.CurrentBeats = CurrentBeats;
+            }
+        }
+
+        private void bDeleteBeat_Click(object sender, EventArgs e) {
+            if (SelectedBeat != null) {
+                CurrentBeats.Remove(SelectedBeat);
+                pgCurrentBeat.SelectedObject = null;
             }
         }
     }
