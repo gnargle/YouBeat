@@ -252,25 +252,47 @@ namespace YouBeatMapper {
             try {
                 Cursor.Current = Cursors.WaitCursor;
                 bool reload = false;
-                ValidateSong();                
+                ValidateSong();
                 //might need to generate the lead in time here and add the lead in time to every note...
-               if (!CurrentSong.LeadInTimeGenerated) {
+                if (!CurrentSong.LeadInTimeGenerated) {
                     audioFile.Position = 0; //reset position else we'll just offset everything to where it left playing
                     var offset = new OffsetSampleProvider(audioFile.ToSampleProvider());
+                    if (CurrentSong.LastLeadInTime != -1) {
+                        var lastLeadInMS = CurrentSong.LastLeadInTime * 1000;
+                        //need to remove the delay then readdd.
+                        offset.SkipOver = TimeSpan.FromSeconds(CurrentSong.LastLeadInTime);
+                        //audioFile.Position = CurrentSong.LastLeadInTime * 1000; //this skips the file forward by the amount of time in the last delay.
+                        foreach (var beat in CurrentSong.EasyBeats) {
+                            beat.HitTime -= lastLeadInMS;
+                        }
+                        foreach (var beat in CurrentSong.AdvancedBeats) {
+                            beat.HitTime -= lastLeadInMS;
+                        }
+                        foreach (var beat in CurrentSong.ExpertBeats) {
+                            beat.HitTime -= lastLeadInMS;
+                        }
+                        if (CurrentSong.PreviewStart > lastLeadInMS) CurrentSong.PreviewStart -= lastLeadInMS;
+                        if (CurrentSong.PreviewEnd > lastLeadInMS) CurrentSong.PreviewEnd -= lastLeadInMS;
+                    }
                     offset.DelayBy = TimeSpan.FromSeconds(CurrentSong.LeadInTime);
                     var tempFileName = Path.Combine(SongFolder, Path.GetFileNameWithoutExtension(CurrentSong.FileName) + "extend" + Path.GetExtension(CurrentSong.FileName));
                     WaveFileWriter.CreateWaveFile(tempFileName, offset.ToWaveProvider());
                     File.Delete(Path.Combine(SongFolder, CurrentSong.FileName));
                     File.Move(tempFileName, Path.Combine(SongFolder, CurrentSong.FileName));
+                    var leadInMS = CurrentSong.LeadInTime * 1000;
                     foreach (var beat in CurrentSong.EasyBeats) {
-                        beat.HitTime += CurrentSong.LeadInTime * 1000;
+                        beat.HitTime += leadInMS;
                     }
                     foreach (var beat in CurrentSong.AdvancedBeats) {
-                        beat.HitTime += CurrentSong.LeadInTime * 1000;
+                        beat.HitTime += leadInMS;
                     }
                     foreach (var beat in CurrentSong.ExpertBeats) {
-                        beat.HitTime += CurrentSong.LeadInTime * 1000;
+                        beat.HitTime += leadInMS;
                     }
+                    if (CurrentSong.PreviewStart > 0)
+                        CurrentSong.PreviewStart += leadInMS;
+                    if (CurrentSong.PreviewEnd > 0)
+                        CurrentSong.PreviewEnd += leadInMS;
                     CurrentSong.LeadInTimeGenerated = true;
                     reload = true; //need to reload to account for the new offset.
                 }
@@ -295,6 +317,7 @@ namespace YouBeatMapper {
                 if (saveFileDialog1.ShowDialog() == DialogResult.OK)
                 {
                     SongFile = saveFileDialog1.FileName;
+                    CurrentSong.SongName = Path.GetFileNameWithoutExtension(SongFile);
                     SaveSong();
                 }
             } else

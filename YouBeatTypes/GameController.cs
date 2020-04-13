@@ -51,6 +51,9 @@ namespace YouBeatTypes {
 
         private System.Media.SoundPlayer hitSound = new System.Media.SoundPlayer("FX\\Blip_Perfect.wav");
 
+        private Timer previewVolumeTimer;
+        private bool reachedPreviewEnd = false;
+
         public void AddToScore(long moreScore) {
             lock (ScoreLock) {
                 Score += moreScore;
@@ -213,7 +216,7 @@ namespace YouBeatTypes {
                 idx = Songs.Count -1;
             } else
                 idx--;
-            SetSong(Songs[idx]);
+            SetSong(Songs[idx], true);
         }
 
         private void SetNextSong() {
@@ -222,7 +225,7 @@ namespace YouBeatTypes {
                 idx = 0;
             } else
                 idx++;
-            SetSong(Songs[idx]);
+            SetSong(Songs[idx], true);
         }
 
         private void PaintRArrowHeld() {
@@ -293,7 +296,7 @@ namespace YouBeatTypes {
                         var song = JsonConvert.DeserializeObject<Song>(json);
                         Songs.Add(song);
                     };
-                    SetSong(Songs.First());
+                    SetSong(Songs.First(), true);
                     State = GameState.Menu;
                     break;
                 case GameState.Menu:
@@ -349,10 +352,6 @@ namespace YouBeatTypes {
                         pad.LightPad(CurrentComboVelo);
                     break;
             }
-        }
-
-        private void _leadInTimer_Elapsed(object sender, ElapsedEventArgs e) {            
-            outputDevice.Play();
         }
 
         public void CreatePads() {
@@ -424,16 +423,51 @@ namespace YouBeatTypes {
             }
         }
 
-        private void SetSong(Song newSong) {
+        private void SetSong(Song newSong, bool preview = false) {
+            if (previewVolumeTimer != null) {
+                previewVolumeTimer.Enabled = false;
+                previewVolumeTimer.Dispose();
+            }
             StopSong();
             CurrentSong = newSong;
             interf.setClock(CurrentSong.BPM);
             var path = Path.Combine(Directory.GetCurrentDirectory(), "Songs", CurrentSong.SongName, CurrentSong.FileName);
             audioFile = new MediaFoundationReader(path);            
             outputDevice = new WaveOutEvent();
-            outputDevice.Init(audioFile);                    
+            outputDevice.Init(audioFile);
+            outputDevice.Volume = 1;
+            if (preview && CurrentSong.PreviewStart > 0 && CurrentSong.PreviewEnd > 0) {
+                audioFile.CurrentTime = TimeSpan.FromMilliseconds(CurrentSong.PreviewStart);
+                outputDevice.Volume = 0;
+                reachedPreviewEnd = false;
+                previewVolumeTimer = new Timer(100);
+                previewVolumeTimer.Elapsed += PreviewVolumeTimer_Elapsed;
+                previewVolumeTimer.AutoReset = true;
+                previewVolumeTimer.Enabled = true;
+            }
             outputDevice.Play();            
             outputDevice.PlaybackStopped += OutputDevice_PlaybackStopped;
+        }
+
+        private void PreviewVolumeTimer_Elapsed(object sender, ElapsedEventArgs e) {
+            if (State == GameState.Menu && audioFile != null && outputDevice != null) {
+                if (!reachedPreviewEnd) {
+                    if (outputDevice.Volume < 0.99)
+                        outputDevice.Volume += 0.01f;
+                    reachedPreviewEnd = audioFile.CurrentTime >= TimeSpan.FromMilliseconds(CurrentSong.PreviewEnd);
+                } else {
+                    if (outputDevice.Volume >= 0.01)
+                        outputDevice.Volume -= 0.01f;
+                    else {
+                        audioFile.CurrentTime = TimeSpan.FromMilliseconds(CurrentSong.PreviewStart);
+                        reachedPreviewEnd = false;
+                    }
+                }
+            } else {
+                //we're done in the menu, get outta here.
+                previewVolumeTimer.AutoReset = false;
+                previewVolumeTimer.Enabled = false;
+            }
         }
 
         private void OutputDevice_PlaybackStopped(object sender, StoppedEventArgs e) {
