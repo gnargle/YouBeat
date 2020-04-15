@@ -1,19 +1,16 @@
 ﻿using LaunchpadNET;
 using Midi.Enums;
+using NAudio.Wave;
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
+using System.IO.Compression;
 using System.Linq;
 using System.Timers;
-using System.IO.Compression;
-using System.Xml.Serialization;
 using static LaunchpadNET.Interface;
-using Newtonsoft.Json;
-using NAudio.Wave;
-using NAudio.Wave.SampleProviders;
 
-namespace YouBeatTypes {    
+namespace YouBeatTypes {
     public class GameController {
         private string[] songZips;
         private List<Song> Songs = new List<Song>();
@@ -51,7 +48,7 @@ namespace YouBeatTypes {
 
         private System.Media.SoundPlayer hitSound = new System.Media.SoundPlayer("FX\\Blip_Perfect.wav");
 
-        private Timer previewVolumeTimer;
+        private Timer songVolumeTimer;
         private bool reachedPreviewEnd = false;
 
         public void AddToScore(long moreScore) {
@@ -200,6 +197,9 @@ namespace YouBeatTypes {
                     var pad = Pads[GetCoordFromButton(x, y)];
                     pad.RegisterHit();
                     break;
+                case GameState.GameOver:
+                    State = GameState.ReturnToMenu;
+                    break;
             }
         }
 
@@ -299,6 +299,10 @@ namespace YouBeatTypes {
                     SetSong(Songs.First(), true);
                     State = GameState.Menu;
                     break;
+                case GameState.ReturnToMenu:
+                    SetSong(Songs.First(), true);
+                    State = GameState.Menu;
+                    break;
                 case GameState.Menu:
                     DrawMenuKeys();
 
@@ -340,12 +344,22 @@ namespace YouBeatTypes {
                     }
                     if (!moreBeats) {
                         State = GameState.GameEnding;
+                        if (CurrentSong.EndTime > 0) {
+                            if (songVolumeTimer != null) {
+                                songVolumeTimer.Enabled = false;
+                                songVolumeTimer.Dispose();
+                            }
+                            songVolumeTimer = new Timer(100);
+                            songVolumeTimer.Elapsed += SongVolumeTimer_Elapsed;
+                            songVolumeTimer.AutoReset = true;
+                            songVolumeTimer.Enabled = true;
+                        }
                     }
                     break;
                 case GameState.GameEnding:
                     foreach (var pad in Pads.Values)
                         pad.LightPad(CurrentComboVelo);
-                    State = GameState.GameOver;
+                    //State = GameState.GameOver;
                     break;
                 case GameState.GameOver:
                     foreach (var pad in Pads.Values)
@@ -419,14 +433,18 @@ namespace YouBeatTypes {
             }
             if (audioFile != null) {
                 audioFile.CurrentTime = TimeSpan.FromTicks(0);
-                audioFile.Dispose();
+                try {
+                    audioFile.Dispose();
+                } catch (Exception e) {
+                    // don't die if the dispose races - it still succeeds.
+                }
             }
         }
 
         private void SetSong(Song newSong, bool preview = false) {
-            if (previewVolumeTimer != null) {
-                previewVolumeTimer.Enabled = false;
-                previewVolumeTimer.Dispose();
+            if (songVolumeTimer != null) {
+                songVolumeTimer.Enabled = false;
+                songVolumeTimer.Dispose();
             }
             StopSong();
             CurrentSong = newSong;
@@ -440,13 +458,31 @@ namespace YouBeatTypes {
                 audioFile.CurrentTime = TimeSpan.FromMilliseconds(CurrentSong.PreviewStart);
                 outputDevice.Volume = 0;
                 reachedPreviewEnd = false;
-                previewVolumeTimer = new Timer(100);
-                previewVolumeTimer.Elapsed += PreviewVolumeTimer_Elapsed;
-                previewVolumeTimer.AutoReset = true;
-                previewVolumeTimer.Enabled = true;
+                songVolumeTimer = new Timer(100);
+                songVolumeTimer.Elapsed += PreviewVolumeTimer_Elapsed;
+                songVolumeTimer.AutoReset = true;
+                songVolumeTimer.Enabled = true;
             }
             outputDevice.Play();            
             outputDevice.PlaybackStopped += OutputDevice_PlaybackStopped;
+        }
+
+        private void SongVolumeTimer_Elapsed(object sender, ElapsedEventArgs e) {
+            if (State == GameState.GameEnding && audioFile != null && outputDevice != null) {
+                if (audioFile.CurrentTime >= TimeSpan.FromMilliseconds(CurrentSong.EndTime)) {
+                    if (outputDevice.Volume >= 0.01)
+                        outputDevice.Volume -= 0.01f;
+                    else {
+                        State = GameState.GameOver;
+                        songVolumeTimer.AutoReset = false;
+                        songVolumeTimer.Enabled = false;
+                    }
+                }
+            } else {
+                //we're done here.
+                songVolumeTimer.AutoReset = false;
+                songVolumeTimer.Enabled = false;
+            }
         }
 
         private void PreviewVolumeTimer_Elapsed(object sender, ElapsedEventArgs e) {
@@ -465,8 +501,8 @@ namespace YouBeatTypes {
                 }
             } else {
                 //we're done in the menu, get outta here.
-                previewVolumeTimer.AutoReset = false;
-                previewVolumeTimer.Enabled = false;
+                songVolumeTimer.AutoReset = false;
+                songVolumeTimer.Enabled = false;
             }
         }
 

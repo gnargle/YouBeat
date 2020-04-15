@@ -29,6 +29,8 @@ namespace YouBeatTypes {
                 _LeadInTime = value;
             }
         }
+        [DisplayName("End Time"), Description("The time at which the song will begin to fade out during play. This should be after all of your notes! If 0, this will just be the regular end of the song.")]
+        public long EndTime { get; set; }
         [Browsable(false)]
         public bool LeadInTimeGenerated { get; set; }
         [DisplayName("Preview Start"), Description("The position in the track to start the audio preview from in the menu.")]

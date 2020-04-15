@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Timers;
 using LaunchpadNET;
 using Midi;
 using Midi.Enums;
@@ -10,54 +11,57 @@ using YouBeatTypes;
 using static LaunchpadNET.Interface;
 
 namespace launchpad_test {
-    class Program {       
+    class Program {
+        private static Timer timer;
+        private static GameController gameController;
+        private static long lastScore = 0;
         static void Main(string[] args) {
-            long lastScore = 0;
-            long lastCombo = 0;
-            Song lastSong = null;
-            Difficulty lastDifficulty = Difficulty.Expert;
-            MenuState lastMenuState = MenuState.SongSelect;
-            var gameController = new GameController();
+            Console.CursorVisible = false;
+            gameController = new GameController();
+            timer = new Timer(100);
+            timer.Elapsed += Timer_Elapsed;
+            timer.AutoReset = true;
+            timer.Enabled = true;                  
             if (gameController.interf.Connected) {
                 while (true) {
                     gameController.MainLoop();
-                    if (gameController.State == GameState.Menu) {
-                        if (gameController.menuState == MenuState.SongSelect) {
-                            if (gameController.menuState != lastMenuState || gameController.CurrentSong != lastSong) {
-                                Console.Clear();
-                                Console.WriteLine("Select a song!");
-                                Console.WriteLine(gameController.CurrentSong.Title);
-                                Console.WriteLine(gameController.CurrentSong.Artist);
-                                lastSong = gameController.CurrentSong;                                
-                            }
-                        } else if (gameController.menuState == MenuState.DifficultySelect) {
-                            if (gameController.menuState != lastMenuState || lastDifficulty != gameController.SelectedDifficulty) {
-                                Console.Clear();
-                                Console.WriteLine($"Song: {gameController.CurrentSong.Title}");
-                                Console.WriteLine("Select a difficulty!");
-                                Console.WriteLine(gameController.SelectedDifficulty);
-                                lastDifficulty = gameController.SelectedDifficulty;
-                            }
-                        }
-                        lastMenuState = gameController.menuState;
-                    } else if (gameController.State == GameState.Game || gameController.State == GameState.GameEnding || gameController.State == GameState.GameOver) {
-                        if (lastScore != gameController.Score || lastCombo != gameController.Combo) {
-                            Console.Clear();
-                            Console.WriteLine($"Score: {gameController.Score}");
-                            Console.WriteLine($"Last note score: {gameController.Score - lastScore}");
-                            Console.WriteLine($"Combo: {gameController.Combo}");
-                            Console.WriteLine($"Max Combo: {gameController.MaxCombo}");
-                            if (gameController.Combo == gameController.TotalBeats)
-                                Console.WriteLine("FULL COMBO!");
-                            lastCombo = gameController.Combo;
-                            lastScore = gameController.Score;
-                        }
-                    }
                 }
             } else {
                 Console.Write("Failed to connect to launchpad");
                 Console.ReadKey();
             }
-        }            
+        }
+
+        private static void Timer_Elapsed(object sender, ElapsedEventArgs e) {
+            if (gameController.State == GameState.Menu) {
+                if (gameController.menuState == MenuState.SongSelect) {
+                    Console.SetCursorPosition(0, 0);
+                    Console.WriteLine("Select a song!" + "                                          ");
+                    Console.WriteLine(gameController.CurrentSong.Title + "                                          ");
+                    Console.WriteLine(gameController.CurrentSong.Artist + "                                          ");
+                } else if (gameController.menuState == MenuState.DifficultySelect) {
+                    Console.SetCursorPosition(0, 0);
+                    Console.WriteLine($"Song: {gameController.CurrentSong.Title}" + "                                          ");
+                    Console.WriteLine("Select a difficulty!" + "                                          ");
+                    Console.WriteLine(gameController.SelectedDifficulty + "                                          ");
+                }
+            } else if  (gameController.State == GameState.Setup || gameController.State == GameState.ReturnToMenu) {
+                Console.Clear();            
+            } else if (gameController.State == GameState.Game || gameController.State == GameState.GameEnding || gameController.State == GameState.GameOver) {
+                Console.SetCursorPosition(0, 0);
+                if (gameController.State == GameState.GameOver)
+                    Console.WriteLine("Game Over!" + "                                          ");
+                Console.WriteLine($"Score: {gameController.Score}" + "                                          ");
+                if (gameController.Score != lastScore || gameController.Score == 0 || gameController.State == GameState.GameOver)
+                    Console.WriteLine($"Last note score: {gameController.Score - lastScore}" + "                                          ");
+                else
+                    Console.WriteLine(String.Empty);
+                Console.WriteLine($"Combo: {gameController.Combo}" + "                                          ");
+                Console.WriteLine($"Max Combo: {gameController.MaxCombo}" + "                                          ");
+                if (gameController.State == GameState.GameOver && gameController.Combo == gameController.TotalBeats)
+                    Console.WriteLine("FULL COMBO!" + "                                          ");
+                lastScore = gameController.Score;
+            }
+        }
     }
 }
