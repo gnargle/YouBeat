@@ -15,6 +15,8 @@ namespace YouBeatTypes {
         public string Artist { get; set; }
         [ReadOnly(true)]
         public string ImageFileName { get; set; }
+        [Browsable(false)]
+        public string ImageData { get; set; }
         [ReadOnly(true)]
         public string FileName { get; set; }
         [Browsable(false)]

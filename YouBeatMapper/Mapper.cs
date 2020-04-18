@@ -15,6 +15,7 @@ using System.Windows.Forms;
 using YouBeatTypes;
 using LaunchpadNET;
 using NAudio.Wave.SampleProviders;
+using System.Reflection;
 
 namespace YouBeatMapper {
     public partial class Mapper : Form {
@@ -39,6 +40,8 @@ namespace YouBeatMapper {
             launchpad = new MapperLPInterf();
             cbDifficulty.DataSource = Enum.GetValues(typeof(Difficulty));
             cbDifficulty.SelectedIndex = 1;
+            ChangeDescriptionHeight(pgCurrentBeat, 100);
+            ChangeDescriptionHeight(pgCurrentSong, 100);
         }
         
         private void NewSongToolStripMenuItem_Click(object sender, EventArgs e) {
@@ -61,6 +64,13 @@ namespace YouBeatMapper {
                         SongName = Path.GetFileNameWithoutExtension(fileDialogNewSong.FileName),
                         LeadInTime = 1
                     };
+                    var img = tfile.Tag.Pictures.Where(p => p.Type == TagLib.PictureType.FrontCover).FirstOrDefault();
+                    if (img != null) {                        
+                        var loadedBmp = (Bitmap)Image.FromStream(new MemoryStream(img.Data.Data));
+                        var bmp = new Bitmap(loadedBmp, new Size(pImage.Width, pImage.Height));
+                        pImage.BackgroundImage = bmp;                        
+                        SaveImageData(loadedBmp, CurrentSong.SongName + ".jpg");
+                    }
                     cbDifficulty.SelectedIndex = 1;
                     cbDifficulty_SelectedIndexChanged(cbDifficulty, null);
                     CurrentBeats = CurrentSong.AdvancedBeats;
@@ -84,6 +94,8 @@ namespace YouBeatMapper {
             try {
                 Cursor.Current = Cursors.WaitCursor;
                 SongFile = filename;
+                ImageFileName = "";
+                AudioFileName = "";
                 SongFolder = Path.Combine(Path.GetDirectoryName(SongFile), Path.GetFileNameWithoutExtension(SongFile));
                 if (Directory.Exists(SongFolder))
                     Directory.Delete(SongFolder, true);
@@ -109,6 +121,18 @@ namespace YouBeatMapper {
                 if (CurrentSong.ExpertBeats == null) {
                     CurrentSong.ExpertBeats = new List<Beat>();
                 }
+                if (!String.IsNullOrWhiteSpace(CurrentSong.ImageData)) {                    
+                    var imgBytes = Convert.FromBase64String(CurrentSong.ImageData);
+                    var loadedBmp = (Bitmap)Image.FromStream(new MemoryStream(imgBytes));
+                    var bmp = new Bitmap(loadedBmp, new Size(pImage.Width, pImage.Height));
+                    pImage.BackgroundImage = bmp;
+                } else if (!String.IsNullOrWhiteSpace(ImageFileName)) {
+                    var loadedBmp = (Bitmap)Image.FromFile(ImageFileName);
+                    var bmp = new Bitmap(loadedBmp, new Size(pImage.Width, pImage.Height));
+                    pImage.BackgroundImage = bmp;
+                } else {
+                    pImage.BackgroundImage = null;
+                }              
                 cbDifficulty.SelectedIndex = 1;
                 cbDifficulty_SelectedIndexChanged(cbDifficulty, null);
                 pgCurrentSong.SelectedObject = CurrentSong;
@@ -296,6 +320,10 @@ namespace YouBeatMapper {
                     CurrentSong.LeadInTimeGenerated = true;
                     reload = true; //need to reload to account for the new offset.
                 }
+                if (!String.IsNullOrWhiteSpace(CurrentSong.ImageData)) {
+                    File.WriteAllBytes(Path.Combine(SongFolder, CurrentSong.ImageFileName), Convert.FromBase64String(CurrentSong.ImageData));
+                    CurrentSong.ImageData = String.Empty;
+                }
                 var json = JsonConvert.SerializeObject(CurrentSong);
                 File.WriteAllText(Path.Combine(SongFolder, $"{Path.GetFileNameWithoutExtension(SongFile)}.js"), json);
                 File.Delete(SongFile);
@@ -347,11 +375,44 @@ namespace YouBeatMapper {
                 launchpad.CurrentBeats = CurrentBeats;
             }
         }
-
         private void bDeleteBeat_Click(object sender, EventArgs e) {
             if (SelectedBeat != null) {
                 CurrentBeats.Remove(SelectedBeat);
                 pgCurrentBeat.SelectedObject = null;
+            }
+        }
+        private static void ChangeDescriptionHeight(PropertyGrid grid, int height) {
+            if (grid == null) throw new ArgumentNullException("grid");
+
+            foreach (Control control in grid.Controls)
+                if (control.GetType().Name == "DocComment") {
+                    FieldInfo fieldInfo = control.GetType().BaseType.GetField("userSized",
+                      BindingFlags.Instance |
+                      BindingFlags.NonPublic);
+                    fieldInfo.SetValue(control, true);
+                    control.Height = height;
+                    return;
+                }
+        }
+
+        private void SaveImageData(Bitmap bmp, string ImageFileName) {
+            if (CurrentSong != null) {
+                System.IO.MemoryStream stream = new System.IO.MemoryStream();
+                bmp.Save(stream, System.Drawing.Imaging.ImageFormat.Bmp);
+                byte[] imageBytes = stream.ToArray();
+                string base64String = Convert.ToBase64String(imageBytes);
+                CurrentSong.ImageData = base64String;
+                CurrentSong.ImageFileName = Path.GetFileName(ImageFileName);
+            }
+        }
+
+        private void bLoadImage_Click(object sender, EventArgs e) {
+            if (fileDialogImageLoad.ShowDialog() == DialogResult.OK) {
+                var loadedBmp = (Bitmap)Image.FromFile(fileDialogImageLoad.FileName);
+                var bmp = new Bitmap(loadedBmp, new Size(pImage.Width, pImage.Height));
+                pImage.BackgroundImage = bmp;
+                SaveImageData(loadedBmp, fileDialogImageLoad.FileName);
+                pgCurrentSong.Refresh();
             }
         }
     }

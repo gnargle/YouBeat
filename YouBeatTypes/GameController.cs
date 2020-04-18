@@ -150,6 +150,10 @@ namespace YouBeatTypes {
             int x, y;
             x = e.GetX(); y = e.GetY();
             switch (State) {
+                case GameState.Title:
+                    if (KeyInMenuObject(x, y) == MenuKey.Confim)
+                        State = GameState.ReturnToMenu;
+                    break;
                 case GameState.Menu:
                     var menu = KeyInMenuObject(x, y);
                     switch (menu) {
@@ -242,23 +246,35 @@ namespace YouBeatTypes {
             interf.massUpdateLEDs(xs, ys, ARROW_HELD_VELO, LightingMode.Pulse);
         }
 
-        private void DrawMenuKeys() {
+        private void DrawLArrow() {
             //left arrow
             List<int> xs = new List<int>() { 0, 0, 0, 0, 0, 1, 1, 2 };
-            List<int> ys = new List<int>() { 0, 1, 2, 3, 4, 0, 1, 0 };            
+            List<int> ys = new List<int>() { 0, 1, 2, 3, 4, 0, 1, 0 };
             if (_lArrowHeld)
-                interf.massUpdateLEDs(xs, ys, ARROW_HELD_VELO, LightingMode.Pulse);     
+                interf.massUpdateLEDs(xs, ys, ARROW_HELD_VELO, LightingMode.Pulse);
             else
                 interf.massUpdateLEDs(xs, ys, ARROW_VELO, LightingMode.Pulse);
+        }
+
+        private void DrawRArrow() {
             //right arrow      
-            xs = new List<int>() { 7, 7, 7, 7, 7, 6, 6, 5 }; 
-            ys = new List<int>() { 3, 4, 5, 6, 7, 6, 7, 7 };            
+            List<int> xs = new List<int>() { 7, 7, 7, 7, 7, 6, 6, 5 };
+            List<int> ys = new List<int>() { 3, 4, 5, 6, 7, 6, 7, 7 };
             if (_rArrowHeld)
                 interf.massUpdateLEDs(xs, ys, ARROW_HELD_VELO, LightingMode.Pulse);
             else
                 interf.massUpdateLEDs(xs, ys, ARROW_VELO, LightingMode.Pulse);
+        }
+
+        private void DrawConfirm() {
             //confirm
             interf.massUpdateLEDsRectangle(2, 2, 5, 5, CONFIRM_VELO, LightingMode.Pulse);
+        }
+
+        private void DrawMenuKeys() {
+            DrawLArrow();
+            DrawRArrow();
+            DrawConfirm();
             if (!(menuState == MenuState.SongSelect)) {
                 interf.massUpdateLEDsRectangle(6, 0, 7, 1, CANCEL_VELO, LightingMode.Pulse);
                 interf.massUpdateLEDsRectangle(0, 6, 1, 7, CANCEL_VELO, LightingMode.Pulse);
@@ -296,8 +312,11 @@ namespace YouBeatTypes {
                         var song = JsonConvert.DeserializeObject<Song>(json);
                         Songs.Add(song);
                     };
-                    SetSong(Songs.First(), true);
-                    State = GameState.Menu;
+                    //SetSong(Songs.First(), true);
+                    State = GameState.Title;
+                    break;
+                case GameState.Title:
+                    DrawConfirm();
                     break;
                 case GameState.ReturnToMenu:
                     SetSong(Songs.First(), true);
@@ -305,7 +324,6 @@ namespace YouBeatTypes {
                     break;
                 case GameState.Menu:
                     DrawMenuKeys();
-
                     break;
                 case GameState.Setup:
                     StopSong();
@@ -435,7 +453,7 @@ namespace YouBeatTypes {
                 audioFile.CurrentTime = TimeSpan.FromTicks(0);
                 try {
                     audioFile.Dispose();
-                } catch (Exception e) {
+                } catch (Exception) {
                     // don't die if the dispose races - it still succeeds.
                 }
             }

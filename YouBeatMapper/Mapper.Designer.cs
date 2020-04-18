@@ -49,6 +49,8 @@
             this.b10 = new System.Windows.Forms.Button();
             this.b00 = new System.Windows.Forms.Button();
             this.panel17 = new System.Windows.Forms.Panel();
+            this.lTimeUpdater = new System.Windows.Forms.Label();
+            this.lTicks = new System.Windows.Forms.Label();
             this.tbMusic = new System.Windows.Forms.TrackBar();
             this.buttonStop = new System.Windows.Forms.Button();
             this.buttonPlay = new System.Windows.Forms.Button();
@@ -57,6 +59,9 @@
             this.pgCurrentSong = new System.Windows.Forms.PropertyGrid();
             this.saveFileDialog1 = new System.Windows.Forms.SaveFileDialog();
             this.flpSettings1 = new System.Windows.Forms.FlowLayoutPanel();
+            this.flpImage = new System.Windows.Forms.FlowLayoutPanel();
+            this.pImage = new System.Windows.Forms.Panel();
+            this.bLoadImage = new System.Windows.Forms.Button();
             this.flpOptions = new System.Windows.Forms.FlowLayoutPanel();
             this.lDifficulty = new System.Windows.Forms.Label();
             this.cbDifficulty = new System.Windows.Forms.ComboBox();
@@ -65,15 +70,15 @@
             this.flpSettings2 = new System.Windows.Forms.FlowLayoutPanel();
             this.flpBeat = new System.Windows.Forms.FlowLayoutPanel();
             this.lBeatProp = new System.Windows.Forms.Label();
-            this.pgCurrentBeat = new System.Windows.Forms.PropertyGrid();
             this.bDeleteBeat = new System.Windows.Forms.Button();
-            this.lTicks = new System.Windows.Forms.Label();
-            this.lTimeUpdater = new System.Windows.Forms.Label();
+            this.pgCurrentBeat = new System.Windows.Forms.PropertyGrid();
+            this.fileDialogImageLoad = new System.Windows.Forms.OpenFileDialog();
             this.menuStrip1.SuspendLayout();
             this.tableLayoutPanel1.SuspendLayout();
             this.panel17.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.tbMusic)).BeginInit();
             this.flpSettings1.SuspendLayout();
+            this.flpImage.SuspendLayout();
             this.flpOptions.SuspendLayout();
             this.flpSong.SuspendLayout();
             this.flpSettings2.SuspendLayout();
@@ -104,28 +109,28 @@
             // newSongToolStripMenuItem
             // 
             this.newSongToolStripMenuItem.Name = "newSongToolStripMenuItem";
-            this.newSongToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            this.newSongToolStripMenuItem.Size = new System.Drawing.Size(130, 22);
             this.newSongToolStripMenuItem.Text = "New Song";
             this.newSongToolStripMenuItem.Click += new System.EventHandler(this.NewSongToolStripMenuItem_Click);
             // 
             // loadSongToolStripMenuItem
             // 
             this.loadSongToolStripMenuItem.Name = "loadSongToolStripMenuItem";
-            this.loadSongToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            this.loadSongToolStripMenuItem.Size = new System.Drawing.Size(130, 22);
             this.loadSongToolStripMenuItem.Text = "Load Song";
             this.loadSongToolStripMenuItem.Click += new System.EventHandler(this.LoadSongToolStripMenuItem_Click);
             // 
             // saveAsToolStripMenuItem
             // 
             this.saveAsToolStripMenuItem.Name = "saveAsToolStripMenuItem";
-            this.saveAsToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            this.saveAsToolStripMenuItem.Size = new System.Drawing.Size(130, 22);
             this.saveAsToolStripMenuItem.Text = "Save As...";
             this.saveAsToolStripMenuItem.Click += new System.EventHandler(this.SaveAsToolStripMenuItem_Click);
             // 
             // saveToolStripMenuItem
             // 
             this.saveToolStripMenuItem.Name = "saveToolStripMenuItem";
-            this.saveToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            this.saveToolStripMenuItem.Size = new System.Drawing.Size(130, 22);
             this.saveToolStripMenuItem.Text = "Save";
             this.saveToolStripMenuItem.Click += new System.EventHandler(this.SaveToolStripMenuItem_Click);
             // 
@@ -157,7 +162,7 @@
             this.tableLayoutPanel1.Controls.Add(this.b20, 2, 0);
             this.tableLayoutPanel1.Controls.Add(this.b10, 1, 0);
             this.tableLayoutPanel1.Controls.Add(this.b00, 0, 0);
-            this.tableLayoutPanel1.Location = new System.Drawing.Point(352, 102);
+            this.tableLayoutPanel1.Location = new System.Drawing.Point(352, 94);
             this.tableLayoutPanel1.Name = "tableLayoutPanel1";
             this.tableLayoutPanel1.RowCount = 4;
             this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 25F));
@@ -357,6 +362,31 @@
             this.panel17.Size = new System.Drawing.Size(1243, 64);
             this.panel17.TabIndex = 2;
             // 
+            // lTimeUpdater
+            // 
+            this.lTimeUpdater.AutoSize = true;
+            this.lTimeUpdater.Font = new System.Drawing.Font("Microsoft Sans Serif", 15F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.lTimeUpdater.Location = new System.Drawing.Point(1098, 30);
+            this.lTimeUpdater.Name = "lTimeUpdater";
+            this.lTimeUpdater.Padding = new System.Windows.Forms.Padding(0, 5, 0, 0);
+            this.lTimeUpdater.RightToLeft = System.Windows.Forms.RightToLeft.No;
+            this.lTimeUpdater.Size = new System.Drawing.Size(23, 30);
+            this.lTimeUpdater.TabIndex = 6;
+            this.lTimeUpdater.Text = "0";
+            this.lTimeUpdater.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
+            // 
+            // lTicks
+            // 
+            this.lTicks.AutoSize = true;
+            this.lTicks.Font = new System.Drawing.Font("Microsoft Sans Serif", 15F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.lTicks.Location = new System.Drawing.Point(1098, 0);
+            this.lTicks.Name = "lTicks";
+            this.lTicks.Padding = new System.Windows.Forms.Padding(0, 5, 0, 0);
+            this.lTicks.Size = new System.Drawing.Size(132, 30);
+            this.lTicks.TabIndex = 5;
+            this.lTicks.Text = "Current Time:";
+            this.lTicks.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
+            // 
             // tbMusic
             // 
             this.tbMusic.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
@@ -403,9 +433,10 @@
             // 
             // pgCurrentSong
             // 
+            this.pgCurrentSong.Dock = System.Windows.Forms.DockStyle.Bottom;
             this.pgCurrentSong.Location = new System.Drawing.Point(3, 33);
             this.pgCurrentSong.Name = "pgCurrentSong";
-            this.pgCurrentSong.Size = new System.Drawing.Size(332, 282);
+            this.pgCurrentSong.Size = new System.Drawing.Size(332, 298);
             this.pgCurrentSong.TabIndex = 3;
             // 
             // saveFileDialog1
@@ -416,19 +447,48 @@
             // flpSettings1
             // 
             this.flpSettings1.BackColor = System.Drawing.SystemColors.Control;
+            this.flpSettings1.Controls.Add(this.flpImage);
             this.flpSettings1.Controls.Add(this.flpOptions);
             this.flpSettings1.Controls.Add(this.flpSong);
             this.flpSettings1.Dock = System.Windows.Forms.DockStyle.Left;
             this.flpSettings1.Location = new System.Drawing.Point(0, 88);
             this.flpSettings1.Name = "flpSettings1";
-            this.flpSettings1.Size = new System.Drawing.Size(346, 595);
+            this.flpSettings1.Size = new System.Drawing.Size(346, 791);
             this.flpSettings1.TabIndex = 4;
+            // 
+            // flpImage
+            // 
+            this.flpImage.Controls.Add(this.pImage);
+            this.flpImage.Controls.Add(this.bLoadImage);
+            this.flpImage.Location = new System.Drawing.Point(3, 3);
+            this.flpImage.Name = "flpImage";
+            this.flpImage.Size = new System.Drawing.Size(335, 400);
+            this.flpImage.TabIndex = 6;
+            // 
+            // pImage
+            // 
+            this.pImage.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.pImage.Location = new System.Drawing.Point(3, 3);
+            this.pImage.Name = "pImage";
+            this.pImage.Size = new System.Drawing.Size(332, 332);
+            this.pImage.TabIndex = 0;
+            // 
+            // bLoadImage
+            // 
+            this.bLoadImage.Font = new System.Drawing.Font("Microsoft Sans Serif", 15F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.bLoadImage.Location = new System.Drawing.Point(3, 341);
+            this.bLoadImage.Name = "bLoadImage";
+            this.bLoadImage.Size = new System.Drawing.Size(332, 54);
+            this.bLoadImage.TabIndex = 1;
+            this.bLoadImage.Text = "Load Image";
+            this.bLoadImage.UseVisualStyleBackColor = true;
+            this.bLoadImage.Click += new System.EventHandler(this.bLoadImage_Click);
             // 
             // flpOptions
             // 
             this.flpOptions.Controls.Add(this.lDifficulty);
             this.flpOptions.Controls.Add(this.cbDifficulty);
-            this.flpOptions.Location = new System.Drawing.Point(3, 3);
+            this.flpOptions.Location = new System.Drawing.Point(3, 409);
             this.flpOptions.Name = "flpOptions";
             this.flpOptions.Size = new System.Drawing.Size(335, 36);
             this.flpOptions.TabIndex = 4;
@@ -454,7 +514,7 @@
             this.cbDifficulty.Location = new System.Drawing.Point(93, 8);
             this.cbDifficulty.Margin = new System.Windows.Forms.Padding(3, 8, 3, 3);
             this.cbDifficulty.Name = "cbDifficulty";
-            this.cbDifficulty.Size = new System.Drawing.Size(231, 21);
+            this.cbDifficulty.Size = new System.Drawing.Size(238, 21);
             this.cbDifficulty.TabIndex = 1;
             this.cbDifficulty.SelectedIndexChanged += new System.EventHandler(this.cbDifficulty_SelectedIndexChanged);
             // 
@@ -462,9 +522,9 @@
             // 
             this.flpSong.Controls.Add(this.lSongProp);
             this.flpSong.Controls.Add(this.pgCurrentSong);
-            this.flpSong.Location = new System.Drawing.Point(3, 45);
+            this.flpSong.Location = new System.Drawing.Point(3, 451);
             this.flpSong.Name = "flpSong";
-            this.flpSong.Size = new System.Drawing.Size(335, 369);
+            this.flpSong.Size = new System.Drawing.Size(335, 331);
             this.flpSong.TabIndex = 5;
             // 
             // lSongProp
@@ -486,7 +546,7 @@
             this.flpSettings2.Dock = System.Windows.Forms.DockStyle.Right;
             this.flpSettings2.Location = new System.Drawing.Point(927, 88);
             this.flpSettings2.Name = "flpSettings2";
-            this.flpSettings2.Size = new System.Drawing.Size(316, 595);
+            this.flpSettings2.Size = new System.Drawing.Size(316, 791);
             this.flpSettings2.TabIndex = 5;
             // 
             // flpBeat
@@ -511,13 +571,6 @@
             this.lBeatProp.Text = "Beat Properties";
             this.lBeatProp.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
             // 
-            // pgCurrentBeat
-            // 
-            this.pgCurrentBeat.Location = new System.Drawing.Point(3, 36);
-            this.pgCurrentBeat.Name = "pgCurrentBeat";
-            this.pgCurrentBeat.Size = new System.Drawing.Size(310, 282);
-            this.pgCurrentBeat.TabIndex = 3;
-            // 
             // bDeleteBeat
             // 
             this.bDeleteBeat.Location = new System.Drawing.Point(154, 3);
@@ -528,37 +581,24 @@
             this.bDeleteBeat.UseVisualStyleBackColor = true;
             this.bDeleteBeat.Click += new System.EventHandler(this.bDeleteBeat_Click);
             // 
-            // lTicks
+            // pgCurrentBeat
             // 
-            this.lTicks.AutoSize = true;
-            this.lTicks.Font = new System.Drawing.Font("Microsoft Sans Serif", 15F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.lTicks.Location = new System.Drawing.Point(1098, 0);
-            this.lTicks.Name = "lTicks";
-            this.lTicks.Padding = new System.Windows.Forms.Padding(0, 5, 0, 0);
-            this.lTicks.Size = new System.Drawing.Size(132, 30);
-            this.lTicks.TabIndex = 5;
-            this.lTicks.Text = "Current Time:";
-            this.lTicks.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
+            this.pgCurrentBeat.Location = new System.Drawing.Point(3, 36);
+            this.pgCurrentBeat.Name = "pgCurrentBeat";
+            this.pgCurrentBeat.Size = new System.Drawing.Size(310, 282);
+            this.pgCurrentBeat.TabIndex = 3;
             // 
-            // lTimeUpdater
+            // fileDialogImageLoad
             // 
-            this.lTimeUpdater.AutoSize = true;
-            this.lTimeUpdater.Font = new System.Drawing.Font("Microsoft Sans Serif", 15F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.lTimeUpdater.Location = new System.Drawing.Point(1098, 30);
-            this.lTimeUpdater.Name = "lTimeUpdater";
-            this.lTimeUpdater.Padding = new System.Windows.Forms.Padding(0, 5, 0, 0);
-            this.lTimeUpdater.RightToLeft = System.Windows.Forms.RightToLeft.No;
-            this.lTimeUpdater.Size = new System.Drawing.Size(23, 30);
-            this.lTimeUpdater.TabIndex = 6;
-            this.lTimeUpdater.Text = "0";
-            this.lTimeUpdater.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
+            this.fileDialogImageLoad.Filter = "Image files|*.jpg;*.png";
+            this.fileDialogImageLoad.Title = "Select an Image...";
             // 
             // Mapper
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.BackColor = System.Drawing.SystemColors.ControlDark;
-            this.ClientSize = new System.Drawing.Size(1243, 683);
+            this.ClientSize = new System.Drawing.Size(1243, 879);
             this.Controls.Add(this.flpSettings2);
             this.Controls.Add(this.flpSettings1);
             this.Controls.Add(this.tableLayoutPanel1);
@@ -566,6 +606,7 @@
             this.Controls.Add(this.menuStrip1);
             this.MainMenuStrip = this.menuStrip1;
             this.Name = "Mapper";
+            this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
             this.Text = "YouBeat Mapper";
             this.menuStrip1.ResumeLayout(false);
             this.menuStrip1.PerformLayout();
@@ -574,6 +615,7 @@
             this.panel17.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)(this.tbMusic)).EndInit();
             this.flpSettings1.ResumeLayout(false);
+            this.flpImage.ResumeLayout(false);
             this.flpOptions.ResumeLayout(false);
             this.flpOptions.PerformLayout();
             this.flpSong.ResumeLayout(false);
@@ -633,6 +675,10 @@
         private System.Windows.Forms.Button bDeleteBeat;
         private System.Windows.Forms.Label lTimeUpdater;
         private System.Windows.Forms.Label lTicks;
+        private System.Windows.Forms.FlowLayoutPanel flpImage;
+        private System.Windows.Forms.Panel pImage;
+        private System.Windows.Forms.Button bLoadImage;
+        private System.Windows.Forms.OpenFileDialog fileDialogImageLoad;
     }
 }
 
