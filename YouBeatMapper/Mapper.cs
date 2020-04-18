@@ -64,7 +64,7 @@ namespace YouBeatMapper {
                         SongName = Path.GetFileNameWithoutExtension(fileDialogNewSong.FileName),
                         LeadInTime = 1
                     };
-                    var img = tfile.Tag.Pictures.Where(p => p.Type == TagLib.PictureType.FrontCover).FirstOrDefault();
+                    var img = tfile.Tag.Pictures.FirstOrDefault();
                     if (img != null) {                        
                         var loadedBmp = (Bitmap)Image.FromStream(new MemoryStream(img.Data.Data));
                         var bmp = new Bitmap(loadedBmp, new Size(pImage.Width, pImage.Height));
