@@ -73,6 +73,9 @@
             this.bDeleteBeat = new System.Windows.Forms.Button();
             this.pgCurrentBeat = new System.Windows.Forms.PropertyGrid();
             this.fileDialogImageLoad = new System.Windows.Forms.OpenFileDialog();
+            this.convertJubeatFormatToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.convertJubeatFolderToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.folderBrowserDialogJubeatFolder = new System.Windows.Forms.FolderBrowserDialog();
             this.menuStrip1.SuspendLayout();
             this.tableLayoutPanel1.SuspendLayout();
             this.panel17.SuspendLayout();
@@ -101,7 +104,9 @@
             this.newSongToolStripMenuItem,
             this.loadSongToolStripMenuItem,
             this.saveAsToolStripMenuItem,
-            this.saveToolStripMenuItem});
+            this.saveToolStripMenuItem,
+            this.convertJubeatFormatToolStripMenuItem,
+            this.convertJubeatFolderToolStripMenuItem});
             this.fileToolStripMenuItem.Name = "fileToolStripMenuItem";
             this.fileToolStripMenuItem.Size = new System.Drawing.Size(37, 20);
             this.fileToolStripMenuItem.Text = "File";
@@ -109,28 +114,28 @@
             // newSongToolStripMenuItem
             // 
             this.newSongToolStripMenuItem.Name = "newSongToolStripMenuItem";
-            this.newSongToolStripMenuItem.Size = new System.Drawing.Size(130, 22);
+            this.newSongToolStripMenuItem.Size = new System.Drawing.Size(203, 22);
             this.newSongToolStripMenuItem.Text = "New Song";
             this.newSongToolStripMenuItem.Click += new System.EventHandler(this.NewSongToolStripMenuItem_Click);
             // 
             // loadSongToolStripMenuItem
             // 
             this.loadSongToolStripMenuItem.Name = "loadSongToolStripMenuItem";
-            this.loadSongToolStripMenuItem.Size = new System.Drawing.Size(130, 22);
+            this.loadSongToolStripMenuItem.Size = new System.Drawing.Size(203, 22);
             this.loadSongToolStripMenuItem.Text = "Load Song";
             this.loadSongToolStripMenuItem.Click += new System.EventHandler(this.LoadSongToolStripMenuItem_Click);
             // 
             // saveAsToolStripMenuItem
             // 
             this.saveAsToolStripMenuItem.Name = "saveAsToolStripMenuItem";
-            this.saveAsToolStripMenuItem.Size = new System.Drawing.Size(130, 22);
+            this.saveAsToolStripMenuItem.Size = new System.Drawing.Size(203, 22);
             this.saveAsToolStripMenuItem.Text = "Save As...";
             this.saveAsToolStripMenuItem.Click += new System.EventHandler(this.SaveAsToolStripMenuItem_Click);
             // 
             // saveToolStripMenuItem
             // 
             this.saveToolStripMenuItem.Name = "saveToolStripMenuItem";
-            this.saveToolStripMenuItem.Size = new System.Drawing.Size(130, 22);
+            this.saveToolStripMenuItem.Size = new System.Drawing.Size(203, 22);
             this.saveToolStripMenuItem.Text = "Save";
             this.saveToolStripMenuItem.Click += new System.EventHandler(this.SaveToolStripMenuItem_Click);
             // 
@@ -593,6 +598,20 @@
             this.fileDialogImageLoad.Filter = "Image files|*.jpg;*.png";
             this.fileDialogImageLoad.Title = "Select an Image...";
             // 
+            // convertJubeatFormatToolStripMenuItem
+            // 
+            this.convertJubeatFormatToolStripMenuItem.Name = "convertJubeatFormatToolStripMenuItem";
+            this.convertJubeatFormatToolStripMenuItem.Size = new System.Drawing.Size(203, 22);
+            this.convertJubeatFormatToolStripMenuItem.Text = "Convert Jubeat Format...";
+            this.convertJubeatFormatToolStripMenuItem.Click += new System.EventHandler(this.convertJubeatFormatToolStripMenuItem_Click);
+            // 
+            // convertJubeatFolderToolStripMenuItem
+            // 
+            this.convertJubeatFolderToolStripMenuItem.Name = "convertJubeatFolderToolStripMenuItem";
+            this.convertJubeatFolderToolStripMenuItem.Size = new System.Drawing.Size(203, 22);
+            this.convertJubeatFolderToolStripMenuItem.Text = "Convert Jubeat (Folder)";
+            this.convertJubeatFolderToolStripMenuItem.Click += new System.EventHandler(this.convertJubeatFolderToolStripMenuItem_Click);
+            // 
             // Mapper
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -679,6 +698,9 @@
         private System.Windows.Forms.Panel pImage;
         private System.Windows.Forms.Button bLoadImage;
         private System.Windows.Forms.OpenFileDialog fileDialogImageLoad;
+        private System.Windows.Forms.ToolStripMenuItem convertJubeatFormatToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem convertJubeatFolderToolStripMenuItem;
+        private System.Windows.Forms.FolderBrowserDialog folderBrowserDialogJubeatFolder;
     }
 }
 

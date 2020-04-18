@@ -61,6 +61,9 @@ namespace launchpad_test {
                 if (gameController.State == GameState.GameOver && gameController.Combo == gameController.TotalBeats)
                     Console.WriteLine("FULL COMBO!" + "                                          ");
                 lastScore = gameController.Score;
+            } else if (gameController.State == GameState.Init) {
+                Console.SetCursorPosition(0, 0);
+                Console.WriteLine("Loading...");
             }
         }
     }

@@ -312,6 +312,8 @@ namespace YouBeatTypes {
                         var song = JsonConvert.DeserializeObject<Song>(json);
                         Songs.Add(song);
                     };
+                    CreatePads();
+                    interf.clearAllLEDs();
                     //SetSong(Songs.First(), true);
                     State = GameState.Title;
                     break;
@@ -321,14 +323,14 @@ namespace YouBeatTypes {
                 case GameState.ReturnToMenu:
                     SetSong(Songs.First(), true);
                     State = GameState.Menu;
+                    menuState = MenuState.SongSelect;
                     break;
                 case GameState.Menu:
                     DrawMenuKeys();
                     break;
                 case GameState.Setup:
                     StopSong();
-                    interf.clearAllLEDs();
-                    CreatePads();
+                    interf.clearAllLEDs();                    
                     if (SelectedDifficulty == Difficulty.Easy)
                         Beats.AddRange(CurrentSong.EasyBeats);
                     else if (SelectedDifficulty == Difficulty.Advanced)
@@ -360,7 +362,7 @@ namespace YouBeatTypes {
                             pad.UpdateBeat();
                         }
                     }
-                    if (!moreBeats) {
+                    if (!moreBeats || audioFile.Position >= audioFile.Length) {
                         State = GameState.GameEnding;
                         if (CurrentSong.EndTime > 0) {
                             if (songVolumeTimer != null) {
@@ -387,13 +389,15 @@ namespace YouBeatTypes {
         }
 
         public void CreatePads() {
-            int velo = 33;
-            for (int x = 0; x < 4; x++) {
-                for (int y = 0; y < 4; y++) {
-                    var pad = new Pad(new Tuple<int, int>(x, y), this);
-                    Pads.Add(new Tuple<int, int>(x, y), pad);
-                    pad.MapperVelo = velo;
-                    velo += 3;
+            if (!Pads.Any()) {
+                int velo = 33;
+                for (int x = 0; x < 4; x++) {
+                    for (int y = 0; y < 4; y++) {
+                        var pad = new Pad(new Tuple<int, int>(x, y), this);
+                        Pads.Add(new Tuple<int, int>(x, y), pad);
+                        pad.MapperVelo = velo;
+                        velo += 3;
+                    }
                 }
             }
         }

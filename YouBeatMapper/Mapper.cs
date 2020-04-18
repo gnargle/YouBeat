@@ -69,7 +69,7 @@ namespace YouBeatMapper {
                         var loadedBmp = (Bitmap)Image.FromStream(new MemoryStream(img.Data.Data));
                         var bmp = new Bitmap(loadedBmp, new Size(pImage.Width, pImage.Height));
                         pImage.BackgroundImage = bmp;                        
-                        SaveImageData(loadedBmp, CurrentSong.SongName + ".jpg");
+                        SaveImageData(loadedBmp, CurrentSong.SongName + ".jpg", CurrentSong);
                     }
                     cbDifficulty.SelectedIndex = 1;
                     cbDifficulty_SelectedIndexChanged(cbDifficulty, null);
@@ -271,60 +271,61 @@ namespace YouBeatMapper {
             }
         }
 
-        private void SaveSong()
+        private void SaveSong(Song songToSave, bool skipValidation = false)
         {
             try {
                 Cursor.Current = Cursors.WaitCursor;
                 bool reload = false;
-                ValidateSong();
+                if (!skipValidation)
+                    ValidateSong();
                 //might need to generate the lead in time here and add the lead in time to every note...
-                if (!CurrentSong.LeadInTimeGenerated) {
+                if (!songToSave.LeadInTimeGenerated) {
                     audioFile.Position = 0; //reset position else we'll just offset everything to where it left playing
                     var offset = new OffsetSampleProvider(audioFile.ToSampleProvider());
-                    if (CurrentSong.LastLeadInTime != -1) {
-                        var lastLeadInMS = CurrentSong.LastLeadInTime * 1000;
+                    if (songToSave.LastLeadInTime != -1) {
+                        var lastLeadInMS = songToSave.LastLeadInTime * 1000;
                         //need to remove the delay then readdd.
-                        offset.SkipOver = TimeSpan.FromSeconds(CurrentSong.LastLeadInTime);
+                        offset.SkipOver = TimeSpan.FromSeconds(songToSave.LastLeadInTime);
                         //audioFile.Position = CurrentSong.LastLeadInTime * 1000; //this skips the file forward by the amount of time in the last delay.
-                        foreach (var beat in CurrentSong.EasyBeats) {
+                        foreach (var beat in songToSave.EasyBeats) {
                             beat.HitTime -= lastLeadInMS;
                         }
-                        foreach (var beat in CurrentSong.AdvancedBeats) {
+                        foreach (var beat in songToSave.AdvancedBeats) {
                             beat.HitTime -= lastLeadInMS;
                         }
-                        foreach (var beat in CurrentSong.ExpertBeats) {
+                        foreach (var beat in songToSave.ExpertBeats) {
                             beat.HitTime -= lastLeadInMS;
                         }
-                        if (CurrentSong.PreviewStart > lastLeadInMS) CurrentSong.PreviewStart -= lastLeadInMS;
-                        if (CurrentSong.PreviewEnd > lastLeadInMS) CurrentSong.PreviewEnd -= lastLeadInMS;
+                        if (songToSave.PreviewStart > lastLeadInMS) songToSave.PreviewStart -= lastLeadInMS;
+                        if (songToSave.PreviewEnd > lastLeadInMS) songToSave.PreviewEnd -= lastLeadInMS;
                     }
-                    offset.DelayBy = TimeSpan.FromSeconds(CurrentSong.LeadInTime);
-                    var tempFileName = Path.Combine(SongFolder, Path.GetFileNameWithoutExtension(CurrentSong.FileName) + "extend" + Path.GetExtension(CurrentSong.FileName));
+                    offset.DelayBy = TimeSpan.FromSeconds(songToSave.LeadInTime);
+                    var tempFileName = Path.Combine(SongFolder, Path.GetFileNameWithoutExtension(songToSave.FileName) + "extend" + Path.GetExtension(songToSave.FileName));
                     WaveFileWriter.CreateWaveFile(tempFileName, offset.ToWaveProvider());
-                    File.Delete(Path.Combine(SongFolder, CurrentSong.FileName));
-                    File.Move(tempFileName, Path.Combine(SongFolder, CurrentSong.FileName));
-                    var leadInMS = CurrentSong.LeadInTime * 1000;
-                    foreach (var beat in CurrentSong.EasyBeats) {
+                    File.Delete(Path.Combine(SongFolder, songToSave.FileName));
+                    File.Move(tempFileName, Path.Combine(SongFolder, songToSave.FileName));
+                    var leadInMS = songToSave.LeadInTime * 1000;
+                    foreach (var beat in songToSave.EasyBeats) {
                         beat.HitTime += leadInMS;
                     }
-                    foreach (var beat in CurrentSong.AdvancedBeats) {
+                    foreach (var beat in songToSave.AdvancedBeats) {
                         beat.HitTime += leadInMS;
                     }
-                    foreach (var beat in CurrentSong.ExpertBeats) {
+                    foreach (var beat in songToSave.ExpertBeats) {
                         beat.HitTime += leadInMS;
                     }
-                    if (CurrentSong.PreviewStart > 0)
-                        CurrentSong.PreviewStart += leadInMS;
-                    if (CurrentSong.PreviewEnd > 0)
-                        CurrentSong.PreviewEnd += leadInMS;
-                    CurrentSong.LeadInTimeGenerated = true;
+                    if (songToSave.PreviewStart > 0)
+                        songToSave.PreviewStart += leadInMS;
+                    if (songToSave.PreviewEnd > 0)
+                        songToSave.PreviewEnd += leadInMS;
+                    songToSave.LeadInTimeGenerated = true;
                     reload = true; //need to reload to account for the new offset.
                 }
-                if (!String.IsNullOrWhiteSpace(CurrentSong.ImageData)) {
-                    File.WriteAllBytes(Path.Combine(SongFolder, CurrentSong.ImageFileName), Convert.FromBase64String(CurrentSong.ImageData));
-                    CurrentSong.ImageData = String.Empty;
+                if (!String.IsNullOrWhiteSpace(songToSave.ImageData)) {
+                    File.WriteAllBytes(Path.Combine(SongFolder, songToSave.ImageFileName), Convert.FromBase64String(songToSave.ImageData));
+                    songToSave.ImageData = String.Empty;
                 }
-                var json = JsonConvert.SerializeObject(CurrentSong);
+                var json = JsonConvert.SerializeObject(songToSave);
                 File.WriteAllText(Path.Combine(SongFolder, $"{Path.GetFileNameWithoutExtension(SongFile)}.js"), json);
                 File.Delete(SongFile);
                 ZipFile.CreateFromDirectory(SongFolder, SongFile);
@@ -346,7 +347,7 @@ namespace YouBeatMapper {
                 {
                     SongFile = saveFileDialog1.FileName;
                     CurrentSong.SongName = Path.GetFileNameWithoutExtension(SongFile);
-                    SaveSong();
+                    SaveSong(CurrentSong);
                 }
             } else
             {
@@ -360,7 +361,7 @@ namespace YouBeatMapper {
                 SaveAsToolStripMenuItem_Click(sender, e);
             else if (CurrentSong != null)
             {
-                SaveSong();
+                SaveSong(CurrentSong);
             }
         }
 
@@ -395,14 +396,14 @@ namespace YouBeatMapper {
                 }
         }
 
-        private void SaveImageData(Bitmap bmp, string ImageFileName) {
+        private void SaveImageData(Bitmap bmp, string ImageFileName, Song song){
             if (CurrentSong != null) {
                 System.IO.MemoryStream stream = new System.IO.MemoryStream();
                 bmp.Save(stream, System.Drawing.Imaging.ImageFormat.Bmp);
                 byte[] imageBytes = stream.ToArray();
                 string base64String = Convert.ToBase64String(imageBytes);
-                CurrentSong.ImageData = base64String;
-                CurrentSong.ImageFileName = Path.GetFileName(ImageFileName);
+                song.ImageData = base64String;
+                song.ImageFileName = Path.GetFileName(ImageFileName);
             }
         }
 
@@ -411,8 +412,147 @@ namespace YouBeatMapper {
                 var loadedBmp = (Bitmap)Image.FromFile(fileDialogImageLoad.FileName);
                 var bmp = new Bitmap(loadedBmp, new Size(pImage.Width, pImage.Height));
                 pImage.BackgroundImage = bmp;
-                SaveImageData(loadedBmp, fileDialogImageLoad.FileName);
+                SaveImageData(loadedBmp, fileDialogImageLoad.FileName, CurrentSong);
                 pgCurrentSong.Refresh();
+            }
+        }
+
+        private void ConvertJubeatFormat(string mp3, Song newSong) {
+            SongFolder = Path.Combine(Path.GetDirectoryName(mp3), Path.GetFileNameWithoutExtension(mp3));
+            Directory.CreateDirectory(SongFolder);
+            File.Copy(mp3, Path.Combine(SongFolder, Path.GetFileName(mp3)), true);//drop audio into folder for later
+            var songToConvert = Path.GetFileNameWithoutExtension(mp3);
+            var directory = Path.GetDirectoryName(mp3);
+            newSong.LeadInTime = 1;
+            newSong.FileName = Path.GetFileName(mp3);
+            var tfile = TagLib.File.Create(mp3);
+            newSong.Artist = tfile.Tag.FirstPerformer;
+            string search = String.Empty;
+            if (int.TryParse(songToConvert.Substring(0, 2), out int i))
+                search = i.ToString() + "*";
+            else
+                search = $"{songToConvert.Replace(' ', '_')}*";
+            foreach (var file in Directory.GetFiles(directory, search)) {
+                if (!Path.GetExtension(file).Equals(".txt", StringComparison.InvariantCultureIgnoreCase))
+                    continue;
+                bool readNotes = false;
+                var fileWithoutExt = Path.GetFileNameWithoutExtension(file);
+                var lines = File.ReadAllLines(file).ToList();
+                int offset = 0;
+                List<Beat> beats = new List<Beat>();
+                foreach (var line in lines) {
+                    if (readNotes) {
+                        var data = line.Split(',');
+                        var pad = Convert.ToInt32(data[1]);
+                        int x = -1; int y = -1;
+                        switch (pad) {
+                            case 1: x = 0; y = 0; break;
+                            case 2: x = 0; y = 1; break;
+                            case 3: x = 0; y = 2; break;
+                            case 4: x = 0; y = 3; break;
+                            case 5: x = 1; y = 0; break;
+                            case 6: x = 1; y = 1; break;
+                            case 7: x = 1; y = 2; break;
+                            case 8: x = 1; y = 3; break;
+                            case 9: x = 2; y = 0; break;
+                            case 10: x = 2; y = 1; break;
+                            case 11: x = 2; y = 2; break;
+                            case 12: x = 2; y = 3; break;
+                            case 13: x = 3; y = 0; break;
+                            case 14: x = 3; y = 1; break;
+                            case 15: x = 3; y = 2; break;
+                            case 16: x = 3; y = 3; break;
+                        }
+                        beats.Add(new Beat(Convert.ToInt64(data[0]) + offset, x, y)); //the measuring is slightly off from naudio, need to bump it a bit
+                    } else if (line.StartsWith("#")) {
+                        //metadata line
+                        var data = line.Split(':');
+                        if (data[0] == "#TITLE_NAME") {
+                            newSong.Title = data[1];
+                            newSong.SongName = data[1];
+                        } else if (data[0] == "#BPM")
+                            newSong.BPM = (int)Convert.ToDouble(data[1]) / 100;
+                        else if (data[0] == "#MUSIC_TIME")
+                            newSong.EndTime = Convert.ToInt64(data[1]);
+                        else if (data[0] == "#AUDIO_FILE")
+                            newSong.FileName = data[1];
+                        else if (data[0] == "#OFFSET")
+                            offset = Convert.ToInt32(data[1]);
+                    } else if (line.Equals("[Notes]", StringComparison.InvariantCultureIgnoreCase)) {
+                        readNotes = true;
+                        continue;
+                    }
+                }
+                if (fileWithoutExt.EndsWith("bsc", StringComparison.InvariantCultureIgnoreCase))
+                    newSong.EasyBeats = beats;
+                else if (fileWithoutExt.EndsWith("adv", StringComparison.InvariantCultureIgnoreCase))
+                    newSong.AdvancedBeats = beats;
+                else if (fileWithoutExt.EndsWith("ext", StringComparison.InvariantCultureIgnoreCase))
+                    newSong.ExpertBeats = beats;
+            }
+            var img = tfile.Tag.Pictures.FirstOrDefault();
+            if (img != null) {
+                var loadedBmp = (Bitmap)Image.FromStream(new MemoryStream(img.Data.Data));
+                var bmp = new Bitmap(loadedBmp, new Size(pImage.Width, pImage.Height));
+                pImage.BackgroundImage = bmp;
+                SaveImageData(loadedBmp, newSong.SongName + ".jpg", newSong);
+            }
+            CurrentSong = newSong;
+            cbDifficulty.SelectedIndex = 1;
+            cbDifficulty_SelectedIndexChanged(cbDifficulty, null);
+            pgCurrentSong.SelectedObject = newSong;
+            audioFile = new MediaFoundationReader(Path.Combine(SongFolder, Path.GetFileName(mp3)));
+            wvOut = new WaveOut();
+            wvOut.PlaybackStopped += OnPlaybackStopped;
+            wvOut.Init(audioFile);
+            launchpad.AudioFile = audioFile;
+            launchpad.WvOut = wvOut;
+            launchpad.CurrentSong = CurrentSong;
+            tbMusic.Value = 0;
+            timer1.Enabled = true;
+        }
+
+        private void convertJubeatFormatToolStripMenuItem_Click(object sender, EventArgs e) {
+            if (fileDialogNewSong.ShowDialog() == DialogResult.OK) {
+                CurrentSong = new Song();
+                ConvertJubeatFormat(fileDialogNewSong.FileName, CurrentSong);
+            }
+        }
+
+        private void convertJubeatFolderToolStripMenuItem_Click(object sender, EventArgs e) {
+            if (folderBrowserDialogJubeatFolder.ShowDialog() == DialogResult.OK) {
+                var saveDir = Path.Combine(folderBrowserDialogJubeatFolder.SelectedPath, "YoubeatGenerated");
+                Directory.CreateDirectory(saveDir);
+                List<String> failedSongs = new List<string>();
+                String prevSongFolder = String.Empty;
+                foreach (var file in Directory.GetFiles(folderBrowserDialogJubeatFolder.SelectedPath, "*.mp3")) {
+                    try {
+                        var newSong = new Song();
+                        ConvertJubeatFormat(file, newSong);
+                        SongFile = Path.Combine(saveDir, newSong.SongName + ".trk");
+                        prevSongFolder = SongFolder;
+                        SaveSong(newSong, true);                        
+                    } catch {
+                        failedSongs.Add(Path.GetFileName(file));
+                    } finally {
+                        if (!String.IsNullOrWhiteSpace(prevSongFolder) && Directory.Exists(prevSongFolder)) {
+                            foreach (var genFile in Directory.GetFiles(prevSongFolder)) {
+                                File.Delete(genFile);
+                            }
+                            Directory.Delete(prevSongFolder);
+                        }
+                    }
+                }
+                string msg = "Your songs have been saved in " + saveDir;
+                if (failedSongs.Any()) {
+                    msg += Environment.NewLine;
+                    msg += "These songs failed to import:" + Environment.NewLine;
+                    foreach (var failedSong in failedSongs) {
+                        msg += failedSong + Environment.NewLine;
+                    }
+                    msg += "You should try and import these tracks manually.";
+                }
+                MessageBox.Show(msg);
             }
         }
     }
