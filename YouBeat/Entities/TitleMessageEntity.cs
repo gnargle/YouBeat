@@ -20,9 +20,9 @@ namespace YouBeat.Entities {
                 Y = y,
                 Color = Color.Black,                
             };
-            //AddGraphic<Image>(rectGraphic);
+            AddGraphic<Image>(rectGraphic);
             AddGraphic<Text>(textGraphic);
-            //rectGraphic.CenterOrigin();
+            rectGraphic.CenterOrigin();
             textGraphic.CenterOrigin();
         }
         public override void Update() {
