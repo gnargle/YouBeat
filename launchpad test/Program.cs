@@ -39,6 +39,7 @@ namespace launchpad_test {
                     Console.WriteLine("Select a song!" + "                                          ");
                     Console.WriteLine(gameController.CurrentSong.Title + "                                          ");
                     Console.WriteLine(gameController.CurrentSong.Artist + "                                          ");
+                    Console.WriteLine("High Score: " + gameController.CurrentSong.ScoreList.Scores.First().Item1 + " - " + gameController.CurrentSong.ScoreList.Scores.First().Item2.ToString() + "                                          ");
                 } else if (gameController.menuState == MenuState.DifficultySelect) {
                     Console.SetCursorPosition(0, 0);
                     Console.WriteLine($"Song: {gameController.CurrentSong.Title}" + "                                          ");
@@ -64,6 +65,11 @@ namespace launchpad_test {
             } else if (gameController.State == GameState.Init) {
                 Console.SetCursorPosition(0, 0);
                 Console.WriteLine("Loading...");
+            } else if (gameController.State == GameState.HighScoreEntry) {
+                Console.SetCursorPosition(0, 0);
+                Console.WriteLine($"Score: {gameController.Score}" + "                                          ");
+                Console.WriteLine("Please enter your name: " + "                                          ");
+                Console.WriteLine(gameController.HighScoreName + "                                          ");
             }
         }
     }

@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Newtonsoft.Json;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
@@ -45,6 +46,9 @@ namespace YouBeatTypes {
         public List<Beat> AdvancedBeats { get; set; }
         [DisplayName("Expert Beats")]
         public List<Beat> ExpertBeats { get; set; }
+        [Browsable(false)]
+        [JsonIgnore]
+        public ScoreList ScoreList { get; set; }
         public Song() {
 
         }

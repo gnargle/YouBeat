@@ -42,6 +42,8 @@ namespace YouBeatTypes {
         public long MaxCombo { get; set; }
         public long TotalBeats { get { return (long)Beats?.Count; } }
         public int CurrentComboVelo { get; set; } = 0;
+        public bool NewHighScore { get; set; } = false;
+        public string HighScoreName { get; set; } = String.Empty;
 
         private object ComboLock = new object();
         private object ScoreLock = new object();
@@ -49,7 +51,7 @@ namespace YouBeatTypes {
         private System.Media.SoundPlayer hitSound = new System.Media.SoundPlayer("FX\\Blip_Perfect.wav");
 
         private Timer songVolumeTimer;
-        private bool reachedPreviewEnd = false;
+        private bool reachedPreviewEnd = false;       
 
         public void AddToScore(long moreScore) {
             lock (ScoreLock) {
@@ -202,9 +204,77 @@ namespace YouBeatTypes {
                     pad.RegisterHit();
                     break;
                 case GameState.GameOver:
-                    State = GameState.ReturnToMenu;
+                    if (NewHighScore)
+                        State = GameState.HighScoreEntry;
+                    else
+                        State = GameState.ReturnToMenu;
+                    break;
+                case GameState.HighScoreEntry:
+                    var menuKey = KeyInMenuObject(x, y);
+                    switch (menuKey) {
+                        case MenuKey.LeftArrow:
+                            if (String.IsNullOrWhiteSpace(HighScoreName))
+                                HighScoreName = "Z";
+                            else {
+                                char currChar = HighScoreName[HighScoreName.Length - 1];
+                                HighScoreName = HighScoreName.Remove(HighScoreName.Length - 1);
+                                HighScoreName = HighScoreName.Insert(HighScoreName.Length, ((char)(currChar - (char)1)).ToString());
+                                if (HighScoreName.EndsWith("@")) {
+                                    HighScoreName = HighScoreName.Remove(HighScoreName.Length - 1);
+                                    HighScoreName = HighScoreName.Insert(HighScoreName.Length, "["); //go to the "END" character
+                                }
+                            }
+                            break;
+                        case MenuKey.RightArrow:
+                            if (String.IsNullOrWhiteSpace(HighScoreName))
+                                HighScoreName = "A";
+                            else {
+                                char currChar = HighScoreName[HighScoreName.Length - 1];
+                                HighScoreName = HighScoreName.Remove(HighScoreName.Length - 1);
+                                HighScoreName = HighScoreName.Insert(HighScoreName.Length, ((char)(currChar + (char)1)).ToString());
+                                if (HighScoreName.EndsWith("[")) {
+                                    //this maps to end
+                                } else if (HighScoreName.EndsWith("\\")) {
+                                    HighScoreName = HighScoreName.Remove(HighScoreName.Length - 1);
+                                    HighScoreName = HighScoreName.Insert(HighScoreName.Length, "A"); //loop
+                                }
+                            }
+                            break;
+                        case MenuKey.Confim:
+                            if (HighScoreName.EndsWith("[")) {
+                                HighScoreName = HighScoreName.Remove(HighScoreName.Length - 1);
+                                SaveHighScore();
+                                State = GameState.ReturnToMenu;
+                            } else {
+                                HighScoreName = String.Concat(HighScoreName, "A"); //insert new character.
+                            }
+                            break;
+                        case MenuKey.Cancel:
+                            HighScoreName = HighScoreName.Remove(HighScoreName.Length - 1);
+                            break;
+                    }
                     break;
             }
+        }
+
+        private void SaveHighScore() {
+            var newHighScore = new Tuple<string, long>(HighScoreName, Score);
+            CurrentSong.ScoreList.Scores.Add(newHighScore);
+            CurrentSong.ScoreList.Scores = CurrentSong.ScoreList.Scores.OrderByDescending(s => s.Item2).ToList();
+            CurrentSong.ScoreList.Scores.RemoveAt(10);
+            var saveList = JsonConvert.SerializeObject(CurrentSong.ScoreList);
+            File.WriteAllText(Path.Combine(Directory.GetCurrentDirectory(), "Songs", CurrentSong.SongName, CurrentSong.SongName + "_list.js"), saveList);
+        }
+
+        private bool ResolveHighScore() {
+            bool ret = false;
+            foreach (var score in CurrentSong.ScoreList.Scores) {
+                if (Score > score.Item2) {
+                    ret = true;
+                    break;
+                }
+            }
+            return ret;
         }
 
         private void IncreaseDifficulty() {
@@ -306,10 +376,22 @@ namespace YouBeatTypes {
         public void MainLoop() {
             switch (State) {
                 case GameState.Init:
-                    songZips = Directory.GetFiles($"Songs", "*.js", SearchOption.AllDirectories);
+                    songZips = Directory.GetFiles($"Songs", "*.js", SearchOption.AllDirectories).Where(f => !f.EndsWith("_list.js")).ToArray();
                     foreach (var songFile in songZips) {
                         var json = File.ReadAllText(songFile);
                         var song = JsonConvert.DeserializeObject<Song>(json);
+                        if (File.Exists(songFile.Replace(".js", "_list.js"))) {
+                            var tempScoreList = JsonConvert.DeserializeObject<ScoreList>(File.ReadAllText(songFile.Replace(".js", "_list.js")));
+                            tempScoreList.Scores = tempScoreList.Scores.OrderByDescending(s => s.Item2).ToList();
+                            song.ScoreList = tempScoreList;
+                        } else {
+                            var tempScoreList = new ScoreList();
+                            for (var i = 0; i < 10; i++) {
+                                tempScoreList.Scores.Add(new Tuple<string, long>("AAA", 0));
+                            }
+                            song.ScoreList = tempScoreList;
+                            File.WriteAllText(songFile.Replace(".js", "_list.js"), JsonConvert.SerializeObject(tempScoreList));
+                        }
                         Songs.Add(song);
                     };
                     CreatePads();
@@ -344,6 +426,7 @@ namespace YouBeatTypes {
                     Combo = 0;
                     MaxCombo = 0;
                     Score = 0;
+                    NewHighScore = false;
                     SetSong(CurrentSong);  
                     State = GameState.Game;
                     break;
@@ -379,8 +462,11 @@ namespace YouBeatTypes {
                 case GameState.GameEnding:
                     foreach (var pad in Pads.Values)
                         pad.LightPad(CurrentComboVelo);
-                    //State = GameState.GameOver;
                     break;
+                case GameState.HighScoreEntry:
+                    menuState = MenuState.NameEntry;
+                    DrawMenuKeys();
+                    break;                
                 case GameState.GameOver:
                     foreach (var pad in Pads.Values)
                         pad.LightPad(CurrentComboVelo);
@@ -498,6 +584,7 @@ namespace YouBeatTypes {
                         State = GameState.GameOver;
                         songVolumeTimer.AutoReset = false;
                         songVolumeTimer.Enabled = false;
+                        NewHighScore = ResolveHighScore();
                     }
                 }
             } else {
