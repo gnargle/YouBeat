@@ -10,7 +10,7 @@ namespace YouBeat {
     class MenuScene : BaseScene {
 
         public void SetupMenu() {
-            AddGraphic<Image>(new Image("..\\..\\Backgrounds\\bg.png"));
+            AddGraphic<Image>(new Image(@"..\..\Backgrounds\bg.png"));
         }
 
         public MenuScene(GameController gameController) : base(gameController) {
