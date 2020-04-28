@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 namespace YouBeat.Entities {
     class TitleEntity : Entity {
         // Tween this value to determine the color later.
-        private float alpha;
+        private float alpha = 0;
         private float _y;
         private bool _transitioning = false;
         public bool Transitioned = false;

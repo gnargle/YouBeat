@@ -7,26 +7,57 @@ using System.Threading.Tasks;
 
 namespace YouBeat.Entities {
     class TitleMessageEntity: Entity {
+        private float alpha = 0;
+        private bool _transitioning = false;
         private string _message;
+        private bool appeared = false;
+        public bool Transitioning {
+            get { return _transitioning; }
+            set {
+                if (value == true) {
+                    Tween(this, new { alpha = 0 }, 120).Ease(Ease.QuadOut);
+                }
+                _transitioning = value;
+            }
+        }
+
         public TitleMessageEntity(String message, float x, float y) : base() {
-            message = _message;            
-            var rectGraphic = Image.CreateRectangle(400, 50, Color.Magenta);
-            rectGraphic.Name = "Rect";
-            rectGraphic.X = x;
-            rectGraphic.Y = y;
+            _message = message;         
             var textGraphic = new Text(message, @"..\..\Fonts\Exo-Medium.ttf" , 25) {
                 Name = "Text",
                 X = x,
                 Y = y,
                 Color = Color.Black,                
             };
-            AddGraphic<Image>(rectGraphic);
-            AddGraphic<Text>(textGraphic);
+            var rectGraphic = Image.CreateRectangle(textGraphic.Width + 50, 50, Color.FromBytes(251, 116, 170));            
+            rectGraphic.Name = "Rect";
+            rectGraphic.X = x;
+            rectGraphic.Y = y;
             rectGraphic.CenterOrigin();
-            textGraphic.CenterOrigin();
+            var circLeft = new Image(@"..\..\Sprites\messageend.png");
+            circLeft.X = rectGraphic.Left-12f;
+            circLeft.Y = y;
+            circLeft.CenterOrigin();
+            var circRight = new Image(@"..\..\Sprites\messageend.png");
+            circRight.X = rectGraphic.Right+12.5f;
+            circRight.Y = y;
+            circRight.Angle = 180f;
+            circRight.CenterOrigin();
+            AddGraphic<Image>(rectGraphic);
+            AddGraphic<Image>(circRight);
+            AddGraphic<Image>(circLeft);
+            AddGraphic<Text>(textGraphic); 
+            textGraphic.CenterTextOrigin();
+            Tween(this, new { alpha = 1 }, 240, 250).Ease(Ease.QuadIn);
         }
         public override void Update() {
-            base.Update();           
+            base.Update();
+            foreach (var graph in Graphics)
+                graph.Alpha = alpha;
+            if (appeared == false && alpha == 1) {
+                appeared = true;
+                Tween(this, new { alpha = 0.5 }, 120).Ease(Ease.SineInOut).Reflect().Repeat();
+            }
         }
     }
 }

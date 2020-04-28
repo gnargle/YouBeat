@@ -196,6 +196,8 @@ namespace YouBeatTypes {
                         case MenuKey.Cancel:
                             if (menuState == MenuState.DifficultySelect)
                                 menuState = MenuState.SongSelect;
+                            else if (menuState == MenuState.SongSelect)
+                                State = GameState.ReturnToTitle;
                             break;
                     }
                     break;
@@ -338,19 +340,17 @@ namespace YouBeatTypes {
 
         private void DrawConfirm() {
             //confirm
-            interf.massUpdateLEDsRectangle(2, 2, 5, 5, CONFIRM_VELO, LightingMode.Pulse);
+            if (interf.Connected)
+                interf.massUpdateLEDsRectangle(2, 2, 5, 5, CONFIRM_VELO, LightingMode.Pulse);
         }
 
         private void DrawMenuKeys() {
-            DrawLArrow();
-            DrawRArrow();
-            DrawConfirm();
-            if (!(menuState == MenuState.SongSelect)) {
+            if (interf.Connected) {
+                DrawLArrow();
+                DrawRArrow();
+                DrawConfirm();
                 interf.massUpdateLEDsRectangle(6, 0, 7, 1, CANCEL_VELO, LightingMode.Pulse);
                 interf.massUpdateLEDsRectangle(0, 6, 1, 7, CANCEL_VELO, LightingMode.Pulse);
-            } else {
-                interf.massUpdateLEDsRectangle(6, 0, 7, 1, velo);
-                interf.massUpdateLEDsRectangle(0, 6, 1, 7, velo);
             }
         }
         public List<Pitch> GetNotesFromButtons(List<Tuple<int, int>> buttons) {
@@ -395,8 +395,30 @@ namespace YouBeatTypes {
                         Songs.Add(song);
                     };
                     CreatePads();
-                    interf.clearAllLEDs();
-                    //SetSong(Songs.First(), true);
+                    if (interf.Connected) {
+                        interf.clearAllLEDs();
+                        State = GameState.Title;
+                    } else
+                        State = GameState.AwaitingLaunchpad;
+                    //SetSong(Songs.First(), true);                    
+                    break;
+                case GameState.AwaitingLaunchpad:
+                    //this will never actually get out of here because the connected devices doesn't update until a restart.
+                    //but it's a useful holding pattern.
+                    var connected = interf.getConnectedLaunchpads();
+                    if (connected.Count() > 0) {
+                        if (interf.connect(connected[0])) {
+                            interf.OnLaunchpadKeyDown += KeyDown;
+                            interf.OnLaunchpadKeyUp += KeyUp;
+                            interf.OnLaunchpadCCKeyDown += CcKeyDown;
+                            interf.OnLaunchpadCCKeyUp += CcKeyUp;
+                            interf.clearAllLEDs();
+                            State = GameState.Title;
+                        }
+                    }
+                    break;
+                case GameState.ReturnToTitle:
+                    StopSong();
                     State = GameState.Title;
                     break;
                 case GameState.Title:

@@ -18,7 +18,10 @@ namespace YouBeat {
         }       
 
         public override void Update() {
-            base.Update();            
+            base.Update();       
+            if (_controller.State == GameState.ReturnToTitle || _controller.State == GameState.Title) {
+                Game.SwitchScene(new TitleScene(_controller));
+            }
         }
     }
 }
