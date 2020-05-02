@@ -13,6 +13,8 @@ namespace YouBeat {
         private Dictionary<Song, SongArtworkEntity> songEntities = new Dictionary<Song, SongArtworkEntity>();
 
         public void OnSongChange(Song newSong, Song prevSong) {
+            //TODO: Fix stutter on song change
+            //TODO: handling for when the next song is after the end of the list and you need to jump.
             SongArtworkEntity ent;
             if (songEntities.TryGetValue(newSong, out ent)) {
                 ent.SetSelectedEntity(true);
