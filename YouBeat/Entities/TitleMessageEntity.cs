@@ -23,7 +23,7 @@ namespace YouBeat.Entities {
 
         public TitleMessageEntity(String message, float x, float y) : base() {
             _message = message;         
-            var textGraphic = new Text(message, @"..\..\Fonts\Exo-Medium.ttf" , 25) {
+            var textGraphic = new Text(message, Globals.GeneralFont , 25) {
                 Name = "Text",
                 X = x,
                 Y = y,
@@ -34,20 +34,22 @@ namespace YouBeat.Entities {
             rectGraphic.X = x;
             rectGraphic.Y = y;
             rectGraphic.CenterOrigin();
-            var circLeft = new Image(@"..\..\Sprites\messageend.png");
-            circLeft.X = rectGraphic.Left-12f;
-            circLeft.Y = y;
+            var circLeft = new Image(@"..\..\Sprites\messageend.png") {
+                X = rectGraphic.Left - 12f,
+                Y = y
+            };
             circLeft.CenterOrigin();
-            var circRight = new Image(@"..\..\Sprites\messageend.png");
-            circRight.X = rectGraphic.Right+12.5f;
-            circRight.Y = y;
-            circRight.Angle = 180f;
+            var circRight = new Image(@"..\..\Sprites\messageend.png") {
+                X = rectGraphic.Right + 12.5f,
+                Y = y,
+                Angle = 180f
+            };
             circRight.CenterOrigin();
             AddGraphic<Image>(rectGraphic);
             AddGraphic<Image>(circRight);
             AddGraphic<Image>(circLeft);
             AddGraphic<Text>(textGraphic); 
-            textGraphic.CenterTextOrigin();
+            textGraphic.CenterTextOrigin(); 
             Tween(this, new { alpha = 1 }, 240, 250).Ease(Ease.QuadIn);
         }
         public override void Update() {

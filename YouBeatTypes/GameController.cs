@@ -11,9 +11,11 @@ using System.Timers;
 using static LaunchpadNET.Interface;
 
 namespace YouBeatTypes {
+    public delegate void SongChangeHandler(Song newSong, Song prevSong);
     public class GameController {
+        private Song _currentSong;
         private string[] songZips;
-        private List<Song> Songs = new List<Song>();
+        public List<Song> Songs { get; set; } = new List<Song>();
         private MediaFoundationReader audioFile;
         private WaveOutEvent outputDevice;
 
@@ -35,8 +37,15 @@ namespace YouBeatTypes {
         public Difficulty SelectedDifficulty { get; set; } = Difficulty.Easy;
         public Dictionary<Tuple<int, int>, Pad> Pads = new Dictionary<Tuple<int, int>, Pad>();
         public List<Beat> Beats = new List<Beat>();
-        
-        public Song CurrentSong { get; set; }
+        public SongChangeHandler OnSongChange { get; set; }
+        public Song CurrentSong { 
+            get { return _currentSong; } 
+            set {
+                var prevSong = _currentSong;
+                _currentSong = value;
+                if (OnSongChange != null)
+                    OnSongChange(_currentSong, prevSong);
+            } }
         public long Score { get; set; }     
         public long Combo { get; set; }
         public long MaxCombo { get; set; }
@@ -545,7 +554,13 @@ namespace YouBeatTypes {
                 }
 
             }            
-        }        
+        }      
+        
+        public String GetImageFilename(Song song) {
+            if (string.IsNullOrEmpty(song.ImageFileName))
+                return null;
+            return Path.Combine(Directory.GetCurrentDirectory(), "Songs", song.SongName, song.ImageFileName);
+        }
 
         private void CcKeyUp(object source, LaunchpadCCKeyEventArgs e) {
             

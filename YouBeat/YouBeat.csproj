@@ -72,6 +72,8 @@
   <ItemGroup>
     <Compile Include="BaseScene.cs" />
     <Compile Include="Entities\ExitEntity.cs" />
+    <Compile Include="Entities\Globals.cs" />
+    <Compile Include="Entities\SongArtworkEntity.cs" />
     <Compile Include="Entities\TitleEntity.cs" />
     <Compile Include="Entities\TitleMessageEntity.cs" />
     <Compile Include="MenuScene.cs" />
@@ -96,6 +98,7 @@
   <ItemGroup>
     <Content Include="Backgrounds\bg.png" />
     <Content Include="FodyWeavers.xml" />
+    <Content Include="Sprites\DefaultArt.png" />
     <Content Include="Sprites\Exit.png" />
     <Content Include="Sprites\logo.png" />
     <Content Include="Sprites\messageend.png" />
