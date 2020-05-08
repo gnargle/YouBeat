@@ -10,9 +10,7 @@ using System.Threading;
 
 namespace YouBeatTypes
 {
-    public class Pad {
-        public enum ScoreVelo { Miss = 0, Bad = 7, OK = 5, Good = 9, Great = 13, Perfect = 87 }
-        public enum Timing { None, Early, Late }
+    public class Pad {        
         public Tuple<int, int> Location { get; set; }
         public List<Tuple<int, int>> Buttons { get; set; }
         public List<Pitch> Notes { get; set; } = new List<Pitch>();
@@ -84,6 +82,7 @@ namespace YouBeatTypes
                         _controller.UpdateCombo(ComboChange.Add);
                         break;
                 }
+                _controller.OnHitReg?.Invoke(_currentVelo);
                 _controller.AddToScore(score);
                 _controller.PlayHitSound();
                 PastBeats.Add(CurrentBeat);

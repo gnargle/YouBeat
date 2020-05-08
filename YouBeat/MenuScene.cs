@@ -12,49 +12,74 @@ namespace YouBeat {
 
         private Dictionary<Song, SongArtworkEntity> songEntities = new Dictionary<Song, SongArtworkEntity>();
 
+        private enum OffScreenEnum { None = 0, Left = 1, Right = 2 }
+        private OffScreenEnum offScreenState = OffScreenEnum.None;
+
         public void OnSongChange(Song newSong, Song prevSong) {
-            //TODO: Fix stutter on song change
-            //TODO: handling for when the next song is after the end of the list and you need to jump.
-            SongArtworkEntity ent;
-            if (songEntities.TryGetValue(newSong, out ent)) {
+            var songList = songEntities.Keys.ToList();
+            var entList = songEntities.Values.ToList();
+            if (songEntities.TryGetValue(newSong, out SongArtworkEntity ent)) {
                 ent.SetSelectedEntity(true);
             }
             if (songEntities.TryGetValue(prevSong, out ent)) {
                 ent.SetSelectedEntity(false);
             }
-            var songList = songEntities.Keys.ToList();
-            bool right = (songList.IndexOf(newSong) > songList.IndexOf(prevSong));
-            //right means the next song is TO THE RIGHt, so we need to shift everything LEFT
-            var entList = songEntities.Values.ToList();
-            if (songEntities.Count > 1) { //can't move if we don't have more than 1
+            if (newSong == songList.First() && prevSong == songList.Last()) {
+                //special case handling for jumping back to the start
+                _controller.SongSelectActive = false; //disable changing song until everything's back on the screen.
+                offScreenState = OffScreenEnum.Left;
+                //i think first set them all to jump off the left of the screen, then lay them out as original.
                 for (int i = 0; i <= songEntities.Count - 1; i++) {
                     ent = entList[i];
-                    var song = songList[i];
-                    if (song == prevSong) {
-                        //if this is the previous song, it needs to move out the centre
-                        //the distance between the centre image and others differs, so get the new song's entity
-                        //to figure it out.
-                        var tempent = songEntities[newSong];
-                        if (right)
-                            ent.SetNewX(ent.X - ent.Graphic.ScaledWidth - 10);
+                    ent.SetNewX(-SongArtworkEntity.MainSize - 50); //full size of the big one, plus some padding so it doesn't poke on screen.
+                }
+            } else if (newSong == songList.Last() && prevSong == songList.First()) {
+                //special case handling for jumping back to the end
+                _controller.SongSelectActive = false; //disable changing song until everything's back on the screen.
+                offScreenState = OffScreenEnum.Right;
+                //i think first set them all to jump off the left of the screen, then lay them out as original.
+                for (int i = 0; i <= songEntities.Count - 1; i++) {
+                    ent = entList[i];
+                    ent.SetNewX(Game.Instance.Width + SongArtworkEntity.MainSize + 50);
+                }
+            } else {                
+                bool right = (songList.IndexOf(newSong) > songList.IndexOf(prevSong));
+                //right means the next song is TO THE RIGHt, so we need to shift everything LEFT
+
+                if (songEntities.Count > 1) { //can't move if we don't have more than 1
+                    for (int i = 0; i <= songEntities.Count - 1; i++) {
+                        ent = entList[i];
+                        var song = songList[i];
+                        float x;
+                        if (ent.NewXTweenComplete)
+                            x = ent.X;
                         else
-                            ent.SetNewX(ent.X + ent.Graphic.ScaledWidth + 10);
-                    } else if (song == newSong) {
-                        //similar to above, but in reverse.
-                        var tempent = songEntities[prevSong];
-                        if (right)
-                            ent.SetNewX(ent.X - tempent.Graphic.ScaledWidth - 10);
-                        else
-                            ent.SetNewX(ent.X + tempent.Graphic.ScaledWidth + 10);
-                    } else {
-                        if (right)
-                            ent.SetNewX(ent.X - ent.Graphic.ScaledWidth);
-                        else
-                            ent.SetNewX(ent.X + ent.Graphic.ScaledWidth);
+                            x = ent.CompleteX;
+                        if (song == prevSong) {
+                            //if this is the previous song, it needs to move out the centre
+                            //the distance between the centre image and others differs, so get the new song's entity
+                            //to figure it out.  
+                            if (right)
+                                ent.SetNewX(x - SongArtworkEntity.MainSize - SongArtworkEntity.SubGap);
+                            else
+                                ent.SetNewX(x + SongArtworkEntity.MainSize + SongArtworkEntity.SubGap);
+                        } else if (song == newSong) {
+                            //similar to above, but in reverse.
+                            var tempent = songEntities[prevSong];
+                            if (right)
+                                ent.SetNewX(x - SongArtworkEntity.MainSize - SongArtworkEntity.SubGap);
+                            else
+                                ent.SetNewX(x + SongArtworkEntity.MainSize + SongArtworkEntity.SubGap);
+                        } else {
+                            if (right)
+                                ent.SetNewX(x - SongArtworkEntity.SubSize);
+                            else
+                                ent.SetNewX(x + SongArtworkEntity.SubSize);
+                        }
                     }
                 }
-            }
-            songEntities.OrderBy(p => p.Value.X);
+                songEntities.OrderBy(p => p.Value.X);
+            }            
         }
 
         public void SetupMenu() {
@@ -63,26 +88,14 @@ namespace YouBeat {
             var mainEntity = new SongArtworkEntity(_controller.GetImageFilename(_controller.CurrentSong), Game.Instance.Width / 2, Game.Instance.Height / 2, true);
             Add(mainEntity);
             songEntities.Add(_controller.CurrentSong, mainEntity);
-            var currX = (Game.Instance.Width / 2) + mainEntity.Graphic.ScaledWidth;
-            var left = false;
+            var currX = (Game.Instance.Width / 2) + SongArtworkEntity.MainSize;
             foreach (var song in _controller.Songs) {
                 if (song == _controller.CurrentSong)
                     continue;
                 var songEnt = new SongArtworkEntity(_controller.GetImageFilename(song), currX, Game.Instance.Height / 2);
                 Add(songEnt);
                 songEntities.Add(song, songEnt);
-                if (left) {
-                    currX = songEnt.X - (songEnt.Graphic.ScaledWidth) - 10; //small gap
-                    /*if (currX < 0) {
-                        break;                        
-                    }*/
-                } else {
-                    currX = songEnt.X + (songEnt.Graphic.ScaledWidth) + 10;
-                    /*if (currX > Game.Instance.Width) {
-                        currX = (Game.Instance.Width / 2) - mainEntity.Graphic.ScaledWidth;
-                        left = true;
-                    }*/
-                }                
+                currX = songEnt.X + SongArtworkEntity.SubSize + SongArtworkEntity.SubGap;                        
             }
             songEntities.OrderBy(p => p.Value.X);
         }
@@ -95,6 +108,54 @@ namespace YouBeat {
             base.Update();       
             if (_controller.State == GameState.ReturnToTitle || _controller.State == GameState.Title) {
                 Game.SwitchScene(new TitleScene(_controller));
+            }
+            if (offScreenState != OffScreenEnum.None) {
+                var songList = songEntities.Keys.ToList();
+                var entList = songEntities.Values.ToList();
+                bool nextTween = true;
+                foreach (var ent in songEntities.Values) {
+                    if (!ent.NewXTweenComplete) {
+                        nextTween = false;
+                        break;
+                    }
+                }
+                if (nextTween) {
+                    float currX = 0;
+                    if (offScreenState == OffScreenEnum.Left) {
+                        for (int i = 0; i <= songEntities.Count - 1; i++) {
+                            var ent = entList[i];
+                            var song = songList[i];
+                            ent.X = Game.Instance.Width + 450;
+                            if (song == _controller.CurrentSong) {
+                                currX = (Game.Instance.Width / 2);
+                            } else {
+                                if (songList[i - 1] == _controller.CurrentSong)
+                                    currX = (Game.Instance.Width / 2) + SongArtworkEntity.MainSize;
+                                else
+                                    currX = entList[i - 1].CompleteX + SongArtworkEntity.SubSize + SongArtworkEntity.SubGap;
+                            }
+                            ent.SetNewX(currX);
+                        }
+                    } else if (offScreenState == OffScreenEnum.Right) {
+                        //the same as left but do it the opposite way.
+                        for (int i = songEntities.Count - 1; i >= 0; i--) {
+                            var ent = entList[i];
+                            var song = songList[i];
+                            ent.X = Game.Instance.Width + 450;
+                            if (song == _controller.CurrentSong) {
+                                currX = (Game.Instance.Width / 2);
+                            } else {
+                                if (songList[i + 1] == _controller.CurrentSong)
+                                    currX = (Game.Instance.Width / 2) - SongArtworkEntity.MainSize;
+                                else
+                                    currX = entList[i + 1].CompleteX - SongArtworkEntity.SubSize + SongArtworkEntity.SubGap;
+                            }
+                            ent.SetNewX(currX);
+                        }
+                    }                        
+                    _controller.SongSelectActive = true;
+                    offScreenState = OffScreenEnum.None;
+                }
             }
         }
     }

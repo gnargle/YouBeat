@@ -34,13 +34,13 @@ namespace launchpad_test {
 
         private static void Timer_Elapsed(object sender, ElapsedEventArgs e) {
             if (gameController.State == GameState.Menu) {
-                if (gameController.menuState == MenuState.SongSelect) {
+                if (gameController.MenuState == MenuState.SongSelect) {
                     Console.SetCursorPosition(0, 0);
                     Console.WriteLine("Select a song!" + "                                          ");
                     Console.WriteLine(gameController.CurrentSong.Title + "                                          ");
                     Console.WriteLine(gameController.CurrentSong.Artist + "                                          ");
                     Console.WriteLine("High Score: " + gameController.CurrentSong.ScoreList.Scores.First().Item1 + " - " + gameController.CurrentSong.ScoreList.Scores.First().Item2.ToString() + "                                          ");
-                } else if (gameController.menuState == MenuState.DifficultySelect) {
+                } else if (gameController.MenuState == MenuState.DifficultySelect) {
                     Console.SetCursorPosition(0, 0);
                     Console.WriteLine($"Song: {gameController.CurrentSong.Title}" + "                                          ");
                     Console.WriteLine("Select a difficulty!" + "                                          ");

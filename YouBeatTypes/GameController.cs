@@ -12,6 +12,7 @@ using static LaunchpadNET.Interface;
 
 namespace YouBeatTypes {
     public delegate void SongChangeHandler(Song newSong, Song prevSong);
+    public delegate void HitRegHandler(ScoreVelo score);
     public class GameController {
         private Song _currentSong;
         private string[] songZips;
@@ -33,18 +34,18 @@ namespace YouBeatTypes {
         public long Separation { get; set; }      
         public long HalfSep { get; set; }
         public GameState State { get; set; } = GameState.Init;
-        public MenuState menuState { get; set; } = MenuState.SongSelect;
+        public MenuState MenuState { get; set; } = MenuState.SongSelect;
         public Difficulty SelectedDifficulty { get; set; } = Difficulty.Easy;
         public Dictionary<Tuple<int, int>, Pad> Pads = new Dictionary<Tuple<int, int>, Pad>();
         public List<Beat> Beats = new List<Beat>();
         public SongChangeHandler OnSongChange { get; set; }
+        public HitRegHandler OnHitReg { get; set; }
         public Song CurrentSong { 
             get { return _currentSong; } 
             set {
                 var prevSong = _currentSong;
                 _currentSong = value;
-                if (OnSongChange != null)
-                    OnSongChange(_currentSong, prevSong);
+                OnSongChange?.Invoke(_currentSong, prevSong);
             } }
         public long Score { get; set; }     
         public long Combo { get; set; }
@@ -53,6 +54,8 @@ namespace YouBeatTypes {
         public int CurrentComboVelo { get; set; } = 0;
         public bool NewHighScore { get; set; } = false;
         public string HighScoreName { get; set; } = String.Empty;
+        public bool LoopActive { get; set; } = true;
+        public bool SongSelectActive { get; set; } = true;
 
         private object ComboLock = new object();
         private object ScoreLock = new object();
@@ -177,9 +180,9 @@ namespace YouBeatTypes {
                             ChangeMenuColour(velo);
                             _lArrowHeld = true;
                             PaintLArrowHeld();
-                            if (menuState == MenuState.SongSelect)
+                            if (MenuState == MenuState.SongSelect && SongSelectActive)
                                 SetPrevSong();
-                            else if (menuState == MenuState.DifficultySelect)
+                            else if (MenuState == MenuState.DifficultySelect)
                                 DecreaseDifficulty();
                             break;
                         case MenuKey.RightArrow:
@@ -191,21 +194,21 @@ namespace YouBeatTypes {
                             ChangeMenuColour(velo);
                             _rArrowHeld = true;
                             PaintRArrowHeld();
-                            if (menuState == MenuState.SongSelect)
+                            if (MenuState == MenuState.SongSelect && SongSelectActive)
                                 SetNextSong();
-                            else if (menuState == MenuState.DifficultySelect)
+                            else if (MenuState == MenuState.DifficultySelect)
                                 IncreaseDifficulty();
                             break;
                         case MenuKey.Confim:
-                            if (menuState == MenuState.SongSelect)
-                                menuState = MenuState.DifficultySelect;
-                            else if (menuState == MenuState.DifficultySelect)
+                            if (MenuState == MenuState.SongSelect)
+                                MenuState = MenuState.DifficultySelect;
+                            else if (MenuState == MenuState.DifficultySelect)
                                 State = GameState.Setup;
                             break;
                         case MenuKey.Cancel:
-                            if (menuState == MenuState.DifficultySelect)
-                                menuState = MenuState.SongSelect;
-                            else if (menuState == MenuState.SongSelect)
+                            if (MenuState == MenuState.DifficultySelect)
+                                MenuState = MenuState.SongSelect;
+                            else if (MenuState == MenuState.SongSelect)
                                 State = GameState.ReturnToTitle;
                             break;
                     }
@@ -382,6 +385,12 @@ namespace YouBeatTypes {
             return new Tuple<int, int>(x / 2, y / 2);
         }
 
+        public void ContinuousLoop() {
+            while (LoopActive) {
+                MainLoop();
+            }
+        }
+
         public void MainLoop() {
             switch (State) {
                 case GameState.Init:
@@ -436,7 +445,7 @@ namespace YouBeatTypes {
                 case GameState.ReturnToMenu:
                     SetSong(Songs.First(), true);
                     State = GameState.Menu;
-                    menuState = MenuState.SongSelect;
+                    MenuState = MenuState.SongSelect;
                     break;
                 case GameState.Menu:
                     DrawMenuKeys();
@@ -495,7 +504,7 @@ namespace YouBeatTypes {
                         pad.LightPad(CurrentComboVelo);
                     break;
                 case GameState.HighScoreEntry:
-                    menuState = MenuState.NameEntry;
+                    MenuState = MenuState.NameEntry;
                     DrawMenuKeys();
                     break;                
                 case GameState.GameOver:
@@ -593,7 +602,9 @@ namespace YouBeatTypes {
             }
             StopSong();
             CurrentSong = newSong;
-            interf.setClock(CurrentSong.BPM);
+            new System.Threading.Thread(delegate () {
+                interf.setClock(CurrentSong.BPM); //this takes fucking AGES because we have to set the clock over a set period of time
+            }).Start();            
             var path = Path.Combine(Directory.GetCurrentDirectory(), "Songs", CurrentSong.SongName, CurrentSong.FileName);
             audioFile = new MediaFoundationReader(path);            
             outputDevice = new WaveOutEvent();

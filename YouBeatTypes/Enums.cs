@@ -10,4 +10,6 @@ namespace YouBeatTypes {
     public enum MenuState { SongSelect, DifficultySelect, NameEntry };
     public enum Difficulty { Easy, Advanced, Expert };
     public enum ComboChange { Add, Break };
+    public enum ScoreVelo { Miss = 0, Bad = 7, OK = 5, Good = 9, Great = 13, Perfect = 87 }
+    public enum Timing { None, Early, Late }
 }

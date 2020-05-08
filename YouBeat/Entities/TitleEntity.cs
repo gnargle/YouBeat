@@ -38,7 +38,6 @@ namespace YouBeat.Entities {
         }
         public override void SceneEnd() {
             base.SceneEnd();
-
         }
     }
 }
