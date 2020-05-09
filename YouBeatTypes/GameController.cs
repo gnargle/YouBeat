@@ -299,30 +299,33 @@ namespace YouBeatTypes {
         }
 
         private void SetDefaultDifficulty() {
+            bool change = false;
             switch (SelectedDifficulty) {
                 //start by checking the currently selected difficulty. If this difficulty has beats, we can jsut ret.
                 case Difficulty.Easy:
                     if (_currentSong.EasyBeats.Any())
-                        return;
+                        change = true;                       
                     break;
                 case Difficulty.Advanced:
                     if (_currentSong.AdvancedBeats.Any())
-                        return;
+                        change = true;                    
                     break;
                 case Difficulty.Expert:
                     if (_currentSong.ExpertBeats.Any())
-                        return;
+                        change = true;
                     break;
             }
             //if we get here, we need to switch to a difficulty with beats.
-            if (_currentSong.EasyBeats.Any())
-                SelectedDifficulty = Difficulty.Easy;
-            else if (_currentSong.AdvancedBeats.Any())
-                SelectedDifficulty = Difficulty.Advanced;
-            else if (_currentSong.ExpertBeats.Any())
-                SelectedDifficulty = Difficulty.Expert;
-            else
-                throw new Exception("This song has no valid beatmaps. This will happen if you mess with the setup file. So, don't do that.");
+            if (change) {
+                if (_currentSong.EasyBeats.Any())
+                    SelectedDifficulty = Difficulty.Easy;
+                else if (_currentSong.AdvancedBeats.Any())
+                    SelectedDifficulty = Difficulty.Advanced;
+                else if (_currentSong.ExpertBeats.Any())
+                    SelectedDifficulty = Difficulty.Expert;
+                else
+                    throw new Exception("This song has no valid beatmaps. This will happen if you mess with the setup file. So, don't do that.");
+            }
             OnSetDifficulty?.Invoke(SelectedDifficulty);
         }
 
