@@ -11,6 +11,7 @@ namespace YouBeat {
     class MenuScene : BaseScene {
 
         private Dictionary<Song, SongArtworkEntity> songEntities = new Dictionary<Song, SongArtworkEntity>();
+        private SongDetailsEntity detailsEntity;
 
         private enum OffScreenEnum { None = 0, Left = 1, Right = 2 }
         private OffScreenEnum offScreenState = OffScreenEnum.None;
@@ -79,13 +80,16 @@ namespace YouBeat {
                     }
                 }
                 songEntities.OrderBy(p => p.Value.X);
-            }            
+            }
+            detailsEntity.ChangeSong(newSong);
         }
 
         public void SetupMenu() {
             _controller.OnSongChange = OnSongChange;
+            _controller.OnMenuStateChange = OnMenuStateChange;
+            _controller.OnSetDifficulty = OnSetDifficulty;
             AddGraphic<Image>(new Image(@"..\..\Backgrounds\bg.png"));            
-            var mainEntity = new SongArtworkEntity(_controller.GetImageFilename(_controller.CurrentSong), Game.Instance.Width / 2, Game.Instance.Height / 2, true);
+            var mainEntity = new SongArtworkEntity(_controller.GetImageFilename(_controller.CurrentSong), Game.Instance.HalfWidth, Game.Instance.HalfHeight, true);
             Add(mainEntity);
             songEntities.Add(_controller.CurrentSong, mainEntity);
             var currX = (Game.Instance.Width / 2) + SongArtworkEntity.MainSize;
@@ -98,6 +102,25 @@ namespace YouBeat {
                 currX = songEnt.X + SongArtworkEntity.SubSize + SongArtworkEntity.SubGap;                        
             }
             songEntities.OrderBy(p => p.Value.X);
+            detailsEntity = new SongDetailsEntity(_controller.CurrentSong, Game.Instance.HalfWidth, Game.Instance.Height - 15);
+            Add(detailsEntity);
+        }
+
+        private void OnSetDifficulty(Difficulty difficulty) {
+            detailsEntity.ChangeDifficulty(difficulty);
+        }
+
+        private void OnMenuStateChange(MenuState newMenuState, MenuState prevMenuState) {
+            switch (prevMenuState) {
+                case MenuState.SongSelect:
+                    if (newMenuState == MenuState.DifficultySelect)
+                        detailsEntity.ShowDifficulty(true);
+                    break;
+                case MenuState.DifficultySelect:
+                    if (newMenuState == MenuState.SongSelect)
+                        detailsEntity.ShowDifficulty(false);
+                    break;
+            }
         }
 
         public MenuScene(GameController gameController) : base(gameController) {
@@ -108,7 +131,7 @@ namespace YouBeat {
             base.Update();       
             if (_controller.State == GameState.ReturnToTitle || _controller.State == GameState.Title) {
                 Game.SwitchScene(new TitleScene(_controller));
-            }
+            }            
             if (offScreenState != OffScreenEnum.None) {
                 var songList = songEntities.Keys.ToList();
                 var entList = songEntities.Values.ToList();
@@ -152,10 +175,14 @@ namespace YouBeat {
                             }
                             ent.SetNewX(currX);
                         }
-                    }                        
+                    }
+                    detailsEntity.BringBackToView();
                     _controller.SongSelectActive = true;
                     offScreenState = OffScreenEnum.None;
                 }
+            } else if (detailsEntity.UpdatingSong) {
+                if (detailsEntity.OffScreen)
+                    detailsEntity.BringBackToView();
             }
         }
     }

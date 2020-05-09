@@ -13,6 +13,8 @@ using static LaunchpadNET.Interface;
 namespace YouBeatTypes {
     public delegate void SongChangeHandler(Song newSong, Song prevSong);
     public delegate void HitRegHandler(ScoreVelo score);
+    public delegate void ChangeMenuStateHandler(MenuState newMenuState, MenuState prevMenuState);
+    public delegate void SetDifficultyHandler(Difficulty difficulty);
     public class GameController {
         private Song _currentSong;
         private string[] songZips;
@@ -40,6 +42,8 @@ namespace YouBeatTypes {
         public List<Beat> Beats = new List<Beat>();
         public SongChangeHandler OnSongChange { get; set; }
         public HitRegHandler OnHitReg { get; set; }
+        public ChangeMenuStateHandler OnMenuStateChange { get; set; }
+        public SetDifficultyHandler OnSetDifficulty { get; set; }
         public Song CurrentSong { 
             get { return _currentSong; } 
             set {
@@ -200,15 +204,18 @@ namespace YouBeatTypes {
                                 IncreaseDifficulty();
                             break;
                         case MenuKey.Confim:
-                            if (MenuState == MenuState.SongSelect)
+                            if (MenuState == MenuState.SongSelect) {
                                 MenuState = MenuState.DifficultySelect;
-                            else if (MenuState == MenuState.DifficultySelect)
+                                OnMenuStateChange?.Invoke(MenuState, MenuState.SongSelect);
+                                SetDefaultDifficulty();
+                            } else if (MenuState == MenuState.DifficultySelect)
                                 State = GameState.Setup;
                             break;
                         case MenuKey.Cancel:
-                            if (MenuState == MenuState.DifficultySelect)
+                            if (MenuState == MenuState.DifficultySelect) {
                                 MenuState = MenuState.SongSelect;
-                            else if (MenuState == MenuState.SongSelect)
+                                OnMenuStateChange?.Invoke(MenuState, MenuState.DifficultySelect);
+                            } else if (MenuState == MenuState.SongSelect)
                                 State = GameState.ReturnToTitle;
                             break;
                     }
@@ -269,7 +276,7 @@ namespace YouBeatTypes {
                     }
                     break;
             }
-        }
+        }        
 
         private void SaveHighScore() {
             var newHighScore = new Tuple<string, long>(HighScoreName, Score);
@@ -291,11 +298,105 @@ namespace YouBeatTypes {
             return ret;
         }
 
+        private void SetDefaultDifficulty() {
+            switch (SelectedDifficulty) {
+                //start by checking the currently selected difficulty. If this difficulty has beats, we can jsut ret.
+                case Difficulty.Easy:
+                    if (_currentSong.EasyBeats.Any())
+                        return;
+                    break;
+                case Difficulty.Advanced:
+                    if (_currentSong.AdvancedBeats.Any())
+                        return;
+                    break;
+                case Difficulty.Expert:
+                    if (_currentSong.ExpertBeats.Any())
+                        return;
+                    break;
+            }
+            //if we get here, we need to switch to a difficulty with beats.
+            if (_currentSong.EasyBeats.Any())
+                SelectedDifficulty = Difficulty.Easy;
+            else if (_currentSong.AdvancedBeats.Any())
+                SelectedDifficulty = Difficulty.Advanced;
+            else if (_currentSong.ExpertBeats.Any())
+                SelectedDifficulty = Difficulty.Expert;
+            else
+                throw new Exception("This song has no valid beatmaps. This will happen if you mess with the setup file. So, don't do that.");
+            OnSetDifficulty?.Invoke(SelectedDifficulty);
+        }
+
         private void IncreaseDifficulty() {
-            SelectedDifficulty = SelectedDifficulty.Next();
+            switch (SelectedDifficulty) {
+                //start by checking the currently selected difficulty. If this difficulty has beats, we can jsut ret.
+                case Difficulty.Easy:
+                    if (_currentSong.AdvancedBeats.Any())
+                        SelectedDifficulty = Difficulty.Advanced;
+                    else if (_currentSong.ExpertBeats.Any())
+                        SelectedDifficulty = Difficulty.Expert;
+                    else if (_currentSong.EasyBeats.Any())
+                        SelectedDifficulty = Difficulty.Easy;
+                    else
+                        throw new Exception("This song has no valid beatmaps. This will happen if you mess with the setup file. So, don't do that.");
+                    break;
+                case Difficulty.Advanced:
+                    if (_currentSong.ExpertBeats.Any())
+                        SelectedDifficulty = Difficulty.Expert;
+                    else if (_currentSong.EasyBeats.Any())
+                        SelectedDifficulty = Difficulty.Easy;
+                    else if (_currentSong.AdvancedBeats.Any())
+                        SelectedDifficulty = Difficulty.Advanced;
+                    else
+                        throw new Exception("This song has no valid beatmaps. This will happen if you mess with the setup file. So, don't do that.");
+                    break;
+                case Difficulty.Expert:
+                    if (_currentSong.EasyBeats.Any())
+                        SelectedDifficulty = Difficulty.Easy;
+                    else if (_currentSong.AdvancedBeats.Any())
+                        SelectedDifficulty = Difficulty.Advanced;
+                    else if (_currentSong.ExpertBeats.Any())
+                        SelectedDifficulty = Difficulty.Expert;
+                    else
+                        throw new Exception("This song has no valid beatmaps. This will happen if you mess with the setup file. So, don't do that.");
+                    break;
+            }
+            OnSetDifficulty?.Invoke(SelectedDifficulty);
         }
         private void DecreaseDifficulty() {
-            SelectedDifficulty = SelectedDifficulty.Previous();
+            switch (SelectedDifficulty) {
+                //start by checking the currently selected difficulty. If this difficulty has beats, we can jsut ret.
+                case Difficulty.Easy:
+                    if (_currentSong.ExpertBeats.Any())
+                        SelectedDifficulty = Difficulty.Expert;
+                    else if (_currentSong.AdvancedBeats.Any())
+                        SelectedDifficulty = Difficulty.Advanced;
+                    else if (_currentSong.EasyBeats.Any())
+                        SelectedDifficulty = Difficulty.Easy;
+                    else
+                        throw new Exception("This song has no valid beatmaps. This will happen if you mess with the setup file. So, don't do that.");
+                    break;
+                case Difficulty.Advanced:
+                    if (_currentSong.EasyBeats.Any())
+                        SelectedDifficulty = Difficulty.Easy;
+                    else if (_currentSong.ExpertBeats.Any())
+                        SelectedDifficulty = Difficulty.Expert;
+                    else if (_currentSong.AdvancedBeats.Any())
+                        SelectedDifficulty = Difficulty.Advanced;
+                    else
+                        throw new Exception("This song has no valid beatmaps. This will happen if you mess with the setup file. So, don't do that.");
+                    break;
+                case Difficulty.Expert:
+                    if (_currentSong.AdvancedBeats.Any())
+                        SelectedDifficulty = Difficulty.Advanced;
+                    else if (_currentSong.EasyBeats.Any())
+                        SelectedDifficulty = Difficulty.Easy;
+                    else if (_currentSong.ExpertBeats.Any())
+                        SelectedDifficulty = Difficulty.Expert;
+                    else
+                        throw new Exception("This song has no valid beatmaps. This will happen if you mess with the setup file. So, don't do that.");
+                    break;
+            }
+            OnSetDifficulty?.Invoke(SelectedDifficulty);
         }
 
         private void SetPrevSong() {

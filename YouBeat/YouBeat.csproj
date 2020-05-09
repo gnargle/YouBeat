@@ -74,6 +74,7 @@
     <Compile Include="Entities\ExitEntity.cs" />
     <Compile Include="Entities\Globals.cs" />
     <Compile Include="Entities\SongArtworkEntity.cs" />
+    <Compile Include="Entities\SongDetailsEntity.cs" />
     <Compile Include="Entities\TitleEntity.cs" />
     <Compile Include="Entities\TitleMessageEntity.cs" />
     <Compile Include="MenuScene.cs" />
@@ -102,6 +103,7 @@
     <Content Include="Sprites\Exit.png" />
     <Content Include="Sprites\logo.png" />
     <Content Include="Sprites\messageend.png" />
+    <Content Include="Sprites\SongDetailsFrame.png" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Fonts\" />
