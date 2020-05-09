@@ -12,8 +12,8 @@ namespace YouBeat.Entities {
         private Text TitleText;
         private Text ArtistText;
         private Text DifficultyText;
-        private Text ArrowLeft;
-        private Text ArrowRight;
+        private Image ArrowLeft;
+        private Image ArrowRight;
         private Song nextSong;
         public bool UpdatingSong { get; private set; } = false;
         public bool OffScreen { get { return Y == Game.Instance.Height + Graphic.Height + 10; } }
@@ -32,25 +32,28 @@ namespace YouBeat.Entities {
             ArtistText.Y -= 115;
             AddGraphic<Text>(ArtistText);
             DifficultyText = new Text(String.Empty, Globals.GeneralFont, 80);
-            DifficultyText.Y += 50;
+            DifficultyText.Color = Color.Black;
+            DifficultyText.Y += 40;
             AddGraphic<Text>(DifficultyText);
-            ArrowLeft = new Text("◀", 80);
-            ArrowLeft.Y += 50;
-            AddGraphic<Text>(ArrowLeft);
-            ArrowRight = new Text("▶", 80);
-            ArrowRight.Y += 50;
-            AddGraphic<Text>(ArrowRight);
+            ArrowLeft = new Image(@"..\..\Sprites\arrow.png");
+            ArrowLeft.Angle = 90f;
+            ArrowLeft.X = (-Game.Instance.HalfWidth + 60);
+            ArrowLeft.Y += 80;
+            ArrowLeft.CenterOrigin();
+            AddGraphic<Image>(ArrowLeft);
+            ArrowRight = new Image(@"..\..\Sprites\arrow.png");
+            ArrowRight.Angle = 270f;
+            ArrowRight.X = Game.Instance.HalfWidth - 60;
+            ArrowRight.Y += 80;
+            ArrowRight.CenterOrigin();
+            AddGraphic<Image>(ArrowRight);
             SetTextDetails(initialSong);
         }
 
         public void ChangeDifficulty(Difficulty difficulty) {
             //▶ for next, ◀ for prev
             DifficultyText.String = difficulty.ToString();
-            DifficultyText.CenterTextOriginX();
-            ArrowLeft.CenterTextOriginX();
-            ArrowLeft.X = DifficultyText.Left - 15;
-            ArrowRight.CenterTextOriginX();
-            ArrowRight.X = DifficultyText.Right - 15;
+            DifficultyText.CenterTextOriginX();          
         }
 
         public void ChangeSong(Song newSong) {

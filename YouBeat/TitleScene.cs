@@ -31,7 +31,6 @@ namespace YouBeat {
         }
 
         public TitleScene(GameController gameController) : base(gameController) {
-            _controller = gameController;
             SetupTitleScreen();
         }
 

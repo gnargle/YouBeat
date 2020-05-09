@@ -99,6 +99,7 @@
   <ItemGroup>
     <Content Include="Backgrounds\bg.png" />
     <Content Include="FodyWeavers.xml" />
+    <Content Include="Sprites\arrow.png" />
     <Content Include="Sprites\DefaultArt.png" />
     <Content Include="Sprites\Exit.png" />
     <Content Include="Sprites\logo.png" />
