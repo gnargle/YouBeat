@@ -115,6 +115,7 @@ namespace YouBeatTypes
                         ClearPad();
                         PastBeats.Add(CurrentBeat);
                         _controller.UpdateCombo(ComboChange.Break);
+                        _controller.OnHitReg?.Invoke(_currentVelo);
                         CurrentBeat = null;
                     } else if (time > CurrentBeat.HitTime + (_controller.HalfSep + _controller.Separation * 4))
                         _currentVelo = ScoreVelo.Bad;

@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 using YouBeat.Entities;
 using YouBeatTypes;
 
-namespace YouBeat {
+namespace YouBeat.Scenes {
     class MenuScene : BaseScene {
 
         private Dictionary<Song, SongArtworkEntity> songEntities = new Dictionary<Song, SongArtworkEntity>();
@@ -102,6 +102,7 @@ namespace YouBeat {
                 currX = songEnt.X + SongArtworkEntity.SubSize + SongArtworkEntity.SubGap;                        
             }
             songEntities.OrderBy(p => p.Value.X);
+            _controller.AcceptInput = true; //all tiles generated, now the user can swap them to their content without causing mixups
             detailsEntity = new SongDetailsEntity(_controller.CurrentSong, Game.Instance.HalfWidth, Game.Instance.Height - 15);
             Add(detailsEntity);
         }
@@ -125,13 +126,18 @@ namespace YouBeat {
 
         public MenuScene(GameController gameController) : base(gameController) {
             SetupMenu();
-        }       
+        }
 
         public override void Update() {
-            base.Update();       
+            base.Update();
             if (_controller.State == GameState.ReturnToTitle || _controller.State == GameState.Title) {
                 Game.SwitchScene(new TitleScene(_controller));
-            }            
+            } else if (_controller.State == GameState.Setup || _controller.State == GameState.PreGameHold) {
+                _controller.OnSongChange = null; //dregister the callbacks to prevent problems
+                _controller.OnMenuStateChange = null;
+                _controller.OnSetDifficulty = null;
+                Game.SwitchScene(new GameScene(_controller));
+            }         
             if (offScreenState != OffScreenEnum.None) {
                 var songList = songEntities.Keys.ToList();
                 var entList = songEntities.Values.ToList();

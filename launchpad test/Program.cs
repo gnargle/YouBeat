@@ -17,7 +17,7 @@ namespace launchpad_test {
         private static long lastScore = 0;
         static void Main(string[] args) {
             Console.CursorVisible = false;
-            gameController = new GameController();
+            gameController = new GameController(ControllerCreator.Console);
             timer = new Timer(100);
             timer.Elapsed += Timer_Elapsed;
             timer.AutoReset = true;

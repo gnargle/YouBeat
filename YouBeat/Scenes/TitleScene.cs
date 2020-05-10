@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 using YouBeat.Entities;
 using YouBeatTypes;
 
-namespace YouBeat {
+namespace YouBeat.Scenes {
     class TitleScene : BaseScene {
         private TitleEntity titleEntity;
         private ExitEntity exitEntity;

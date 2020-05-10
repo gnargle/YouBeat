@@ -22,7 +22,7 @@ namespace YouBeatMapper {
         public const int BEAT_DUR = 250;
 
         public MapperLPInterf() {
-            controller = new GameController(true);
+            controller = new GameController(ControllerCreator.Mapper);
             interf = new Interface();
             var connected = interf.getConnectedLaunchpads();
             if (connected.Count() > 0) {

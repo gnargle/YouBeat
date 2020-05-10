@@ -7,7 +7,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using YouBeatTypes;
 
-namespace YouBeat {
+namespace YouBeat.Scenes {
     class BaseScene : Scene {
         protected GameController _controller;
 
@@ -19,7 +19,7 @@ namespace YouBeat {
         }
 
         public BaseScene() : base() {
-            _controller = new GameController();
+            _controller = new GameController(ControllerCreator.Youbeat);
             //this doesn't work, it dies when we change scene. Thought the thread would prevent this???
             /*new Thread(delegate () {
                 _controller.ContinuousLoop(); //despatch this into a separate thread. Don't tie responsiveness to the UI refresh.

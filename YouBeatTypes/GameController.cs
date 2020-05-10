@@ -23,7 +23,17 @@ namespace YouBeatTypes {
         private WaveOutEvent outputDevice;
 
         private bool _lArrowHeld = false;
-        private bool _rArrowHeld = false;        
+        private bool _rArrowHeld = false;
+
+        private ControllerCreator _controllerCreator;
+
+        private object ComboLock = new object();
+        private object ScoreLock = new object();
+
+        private System.Media.SoundPlayer hitSound = new System.Media.SoundPlayer("FX\\Blip_Perfect.wav");
+
+        private Timer songVolumeTimer;
+        private bool reachedPreviewEnd = false;
 
         public Interface interf;
         public int velo;
@@ -60,14 +70,7 @@ namespace YouBeatTypes {
         public string HighScoreName { get; set; } = String.Empty;
         public bool LoopActive { get; set; } = true;
         public bool SongSelectActive { get; set; } = true;
-
-        private object ComboLock = new object();
-        private object ScoreLock = new object();
-
-        private System.Media.SoundPlayer hitSound = new System.Media.SoundPlayer("FX\\Blip_Perfect.wav");
-
-        private Timer songVolumeTimer;
-        private bool reachedPreviewEnd = false;       
+        public bool AcceptInput { get; set; } = true;
 
         public void AddToScore(long moreScore) {
             lock (ScoreLock) {
@@ -143,6 +146,8 @@ namespace YouBeatTypes {
         }
 
         private void KeyUp(object source, LaunchpadKeyEventArgs e) {
+            if (!AcceptInput)
+                return;
             int x, y;
             x = e.GetX(); y = e.GetY();
             switch (State) {
@@ -165,6 +170,8 @@ namespace YouBeatTypes {
         }
 
         private void KeyDown(object sender, LaunchpadKeyEventArgs e) {
+            if (!AcceptInput)
+                return;
             int x, y;
             x = e.GetX(); y = e.GetY();
             switch (State) {
@@ -495,6 +502,11 @@ namespace YouBeatTypes {
             }
         }
 
+        public void StartGame() {
+            SetSong(CurrentSong);
+            State = GameState.Game;
+        }
+
         public void MainLoop() {
             switch (State) {
                 case GameState.Init:
@@ -550,6 +562,8 @@ namespace YouBeatTypes {
                     SetSong(Songs.First(), true);
                     State = GameState.Menu;
                     MenuState = MenuState.SongSelect;
+                    if (_controllerCreator == ControllerCreator.Youbeat)
+                        AcceptInput = false;
                     break;
                 case GameState.Menu:
                     DrawMenuKeys();
@@ -571,9 +585,14 @@ namespace YouBeatTypes {
                     MaxCombo = 0;
                     Score = 0;
                     NewHighScore = false;
-                    SetSong(CurrentSong);  
-                    State = GameState.Game;
+                    if (_controllerCreator != ControllerCreator.Youbeat) {
+                        SetSong(CurrentSong);
+                        State = GameState.Game;
+                    } else
+                        State = GameState.PreGameHold;
                     break;
+                case GameState.PreGameHold:
+                    break; //do nothing - we're waiting for the scene transition before we start.
                 case GameState.Game:
                     if (audioFile == null || audioFile.CurrentTime == null)
                         Elapsed = 0;
@@ -632,12 +651,13 @@ namespace YouBeatTypes {
             }
         }
 
-        public GameController(bool FromMapper = false) {
+        public GameController(ControllerCreator creator) {
             interf = new Interface();
             velo = 0;
             Separation = 250;
-            HalfSep = Separation / 2; //save calculations later.            
-            if (!FromMapper) { //if we're created from the mapper, the mapper is managing the launchpad interface.
+            HalfSep = Separation / 2; //save calculations later.    
+            _controllerCreator = creator;
+            if (creator != ControllerCreator.Mapper) { //if we're created from the mapper, the mapper is managing the launchpad interface.
                 hitSound.Load();
                 var connected = interf.getConnectedLaunchpads();
                 if (connected.Count() > 0) {
