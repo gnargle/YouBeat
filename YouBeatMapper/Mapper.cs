@@ -170,14 +170,14 @@ namespace YouBeatMapper {
                 var activeBeats = CurrentBeats.Where(b => (b.HitTime <= currTime + MapperLPInterf.BEAT_DUR) && (b.HitTime >= currTime - MapperLPInterf.BEAT_DUR));
                 var inactiveBeats = CurrentBeats.Where(b => (b.HitTime <= currTime - MapperLPInterf.BEAT_DUR) ||  (b.HitTime >= currTime + MapperLPInterf.BEAT_DUR));
                 List<Button> ctlsSeen = new List<Button>();
-                foreach (var beat in activeBeats) {
-                    var ctl = (Button)tableLayoutPanel1.GetControlFromPosition(beat.y, beat.x);
-                    if (!ctlsSeen.Contains(ctl)) {
-                        ctl.BackColor = Color.Red;
-                        ctlsSeen.Add(ctl);
-                    }
-                }
                 try {
+                    foreach (var beat in activeBeats) {
+                        var ctl = (Button)tableLayoutPanel1.GetControlFromPosition(beat.y, beat.x);
+                        if (!ctlsSeen.Contains(ctl)) {
+                            ctl.BackColor = Color.Red;
+                            ctlsSeen.Add(ctl);
+                        }
+                    }                
                     foreach (var beat in inactiveBeats) {
                         var ctl = (Button)tableLayoutPanel1.GetControlFromPosition(beat.y, beat.x);
                         if (!ctlsSeen.Contains(ctl)) {
@@ -248,7 +248,7 @@ namespace YouBeatMapper {
             if (CurrentSong != null) {
                 var currTime = Convert.ToInt64(audioFile.CurrentTime.TotalMilliseconds);
                 var coords = tableLayoutPanel1.GetPositionFromControl((Control)sender);
-                var existingBeat = CurrentBeats.Where(b => (b.HitTime <= currTime + 125) && (b.HitTime >= currTime - 125) && b.x == coords.Row && b.y == coords.Column).FirstOrDefault();
+                var existingBeat = CurrentBeats.Where(b => (b.HitTime <= currTime + MapperLPInterf.BEAT_DUR) && (b.HitTime >= currTime - MapperLPInterf.BEAT_DUR) && b.x == coords.Row && b.y == coords.Column).FirstOrDefault();
                 if (existingBeat != null) {
                     AssignBeat(existingBeat);               
                 } else {
@@ -266,9 +266,10 @@ namespace YouBeatMapper {
                 throw new SaveValidationException("BPM set to an invalid value. BPM of song must be between 40 and 240 for the launchpad light pulse to function.");
             if (!CurrentBeats.Any())
                 throw new SaveValidationException("No beats in current difficulty track.");
-            if (CurrentSong.LeadInTime < 1) {
+            if (CurrentSong.LeadInTime < 1) 
                 throw new SaveValidationException("You must have a lead-in time of at least a second.");
-            }
+            if (CurrentSong.PreviewEnd < CurrentSong.PreviewStart)
+                throw new SaveValidationException("Your previ ew end time is before your preview start time.");
         }
 
         private void SaveSong(Song songToSave, bool skipValidation = false)
