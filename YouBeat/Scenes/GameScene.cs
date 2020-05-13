@@ -10,7 +10,7 @@ using YouBeatTypes;
 namespace YouBeat.Scenes {
     class GameScene : BaseScene {
 
-        private ComboEntity comboEntity;
+        private ScoreEntity comboEntity;
 
         public GameScene(GameController gameController) : base(gameController) {
             SetupGame();
@@ -20,12 +20,12 @@ namespace YouBeat.Scenes {
         private void SetupGame() {
             _controller.OnHitReg = HitRegHandler;
             AddGraphic<Image>(new Image(@"..\..\Backgrounds\bg.png"));
-            comboEntity = new ComboEntity(Game.Instance.HalfWidth, 50);
+            comboEntity = new ScoreEntity(Game.Instance.Width - 250, 50);
             Add(comboEntity);
         }
         public override void Update() {
             base.Update();
-            comboEntity.UpdateCombo(_controller.Combo);
+            comboEntity.UpdateCombo(_controller.Combo, _controller.Score);
         }
 
         public void HitRegHandler(ScoreVelo score) {

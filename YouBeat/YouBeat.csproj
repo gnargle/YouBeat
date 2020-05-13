@@ -39,9 +39,6 @@
     <Reference Include="Costura, Version=3.3.3.0, Culture=neutral, PublicKeyToken=9919ef960d84173d, processorArchitecture=MSIL">
       <HintPath>..\packages\Costura.Fody.3.3.3\lib\net40\Costura.dll</HintPath>
     </Reference>
-    <Reference Include="Otter, Version=0.9.8.926, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\Otter.0.9.8.926\lib\net45\Otter.dll</HintPath>
-    </Reference>
     <Reference Include="sfmlnet-audio-2, Version=2.2.0.0, Culture=neutral, processorArchitecture=x86">
       <HintPath>..\packages\Otter.0.9.8.926\lib\net45\sfmlnet-audio-2.dll</HintPath>
     </Reference>
@@ -70,7 +67,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Entities\ComboEntity.cs" />
+    <Compile Include="Entities\ScoreEntity.cs" />
     <Compile Include="Entities\InGameSongDetailsEntity.cs" />
     <Compile Include="Scenes\BaseScene.cs" />
     <Compile Include="Entities\ExitEntity.cs" />
@@ -95,6 +92,10 @@
     <ProjectReference Include="..\..\launchpad-dot-net\launchpad-dot-net\launchpad-dot-net.csproj">
       <Project>{2784C4AF-3B96-471B-91B0-1A11C342D375}</Project>
       <Name>launchpad-dot-net</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\Otter-7615991da1d8e9d2d6f4c606767585858f9d0936\Otter\Otter.csproj">
+      <Project>{236485c2-a7ba-4dcd-808a-b3a634764402}</Project>
+      <Name>Otter</Name>
     </ProjectReference>
     <ProjectReference Include="..\YouBeatTypes\YouBeatTypes.csproj">
       <Project>{b9db3148-ec61-4402-9271-564cb0c78c44}</Project>
