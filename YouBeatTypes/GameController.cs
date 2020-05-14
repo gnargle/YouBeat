@@ -651,6 +651,12 @@ namespace YouBeatTypes {
             }
         }
 
+        ~GameController() {
+            if (interf.Connected) {
+                interf.SetMode(LaunchpadMode.Live);
+            }
+        }
+
         public GameController(ControllerCreator creator) {
             interf = new Interface();
             velo = 0;
@@ -662,6 +668,7 @@ namespace YouBeatTypes {
                 var connected = interf.getConnectedLaunchpads();
                 if (connected.Count() > 0) {
                     if (interf.connect(connected[0])) {
+                        interf.SetMode(LaunchpadMode.Programmer);
                         interf.OnLaunchpadKeyDown += KeyDown;
                         interf.OnLaunchpadKeyUp += KeyUp;
                         interf.OnLaunchpadCCKeyDown += CcKeyDown;
