@@ -105,6 +105,8 @@
   <ItemGroup>
     <Content Include="Backgrounds\bg.png" />
     <Content Include="FodyWeavers.xml" />
+    <Content Include="FX\Blip.wav" />
+    <Content Include="FX\Blip_Perfect.wav" />
     <Content Include="Sprites\arrow.png" />
     <Content Include="Sprites\DefaultArt.png" />
     <Content Include="Sprites\Exit.png" />

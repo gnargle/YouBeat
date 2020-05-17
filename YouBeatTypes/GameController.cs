@@ -30,8 +30,6 @@ namespace YouBeatTypes {
         private object ComboLock = new object();
         private object ScoreLock = new object();
 
-        private System.Media.SoundPlayer hitSound = new System.Media.SoundPlayer("FX\\Blip_Perfect.wav");
-
         private Timer songVolumeTimer;
         private bool reachedPreviewEnd = false;
 
@@ -76,10 +74,6 @@ namespace YouBeatTypes {
             lock (ScoreLock) {
                 Score += moreScore;
             }
-        }
-
-        public void PlayHitSound() {
-            hitSound.Play();
         }
 
         public void UpdateCombo (ComboChange change) {
@@ -664,7 +658,6 @@ namespace YouBeatTypes {
             HalfSep = Separation / 2; //save calculations later.    
             _controllerCreator = creator;
             if (creator != ControllerCreator.Mapper) { //if we're created from the mapper, the mapper is managing the launchpad interface.
-                hitSound.Load();
                 var connected = interf.getConnectedLaunchpads();
                 if (connected.Count() > 0) {
                     if (interf.connect(connected[0])) {

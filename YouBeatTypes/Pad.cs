@@ -84,7 +84,6 @@ namespace YouBeatTypes
                 }
                 _controller.OnHitReg?.Invoke(_currentVelo);
                 _controller.AddToScore(score);
-                _controller.PlayHitSound();
                 PastBeats.Add(CurrentBeat);
                 CurrentBeat = null;
             }

@@ -15,6 +15,7 @@ namespace YouBeat.Scenes {
 
         private enum OffScreenEnum { None = 0, Left = 1, Right = 2 }
         private OffScreenEnum offScreenState = OffScreenEnum.None;
+        private Sound NextSound;
 
         public void OnSongChange(Song newSong, Song prevSong) {
             var songList = songEntities.Keys.ToList();
@@ -82,6 +83,7 @@ namespace YouBeat.Scenes {
                 songEntities.OrderBy(p => p.Value.X);
             }
             detailsEntity.ChangeSong(newSong);
+            NextSound.Play();
         }
 
         public void SetupMenu() {
@@ -105,6 +107,7 @@ namespace YouBeat.Scenes {
             _controller.AcceptInput = true; //all tiles generated, now the user can swap them to their content without causing mixups
             detailsEntity = new SongDetailsEntity(_controller.CurrentSong, Game.Instance.HalfWidth, Game.Instance.Height - 15);
             Add(detailsEntity);
+            NextSound = new Sound(@"..\..\FX\Next.wav");
         }
 
         private void OnSetDifficulty(Difficulty difficulty) {
