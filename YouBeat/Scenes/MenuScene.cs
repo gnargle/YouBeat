@@ -103,11 +103,12 @@ namespace YouBeat.Scenes {
                 songEntities.Add(song, songEnt);
                 currX = songEnt.X + SongArtworkEntity.SubSize + SongArtworkEntity.SubGap;                        
             }
-            songEntities.OrderBy(p => p.Value.X);
-            _controller.AcceptInput = true; //all tiles generated, now the user can swap them to their content without causing mixups
+            songEntities.OrderBy(p => p.Value.X);            
             detailsEntity = new SongDetailsEntity(_controller.CurrentSong, Game.Instance.HalfWidth, Game.Instance.Height - 15);
             Add(detailsEntity);
             NextSound = new Sound(@"..\..\FX\Next.wav");
+
+            _controller.AcceptInput = true; //all tiles generated, now the user can swap them to their content without causing mixups
         }
 
         private void OnSetDifficulty(Difficulty difficulty) {

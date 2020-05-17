@@ -33,7 +33,6 @@ namespace YouBeat.Scenes {
 
         public override void End() {
             base.End();
-            _controller.LoopActive = false; // stop the loop
         }
     }
 }

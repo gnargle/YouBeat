@@ -304,15 +304,15 @@ namespace YouBeatTypes {
             switch (SelectedDifficulty) {
                 //start by checking the currently selected difficulty. If this difficulty has beats, we can jsut ret.
                 case Difficulty.Easy:
-                    if (_currentSong.EasyBeats.Any())
+                    if (!_currentSong.EasyBeats.Any())
                         change = true;                       
                     break;
                 case Difficulty.Advanced:
-                    if (_currentSong.AdvancedBeats.Any())
+                    if (!_currentSong.AdvancedBeats.Any())
                         change = true;                    
                     break;
                 case Difficulty.Expert:
-                    if (_currentSong.ExpertBeats.Any())
+                    if (!_currentSong.ExpertBeats.Any())
                         change = true;
                     break;
             }
@@ -646,7 +646,7 @@ namespace YouBeatTypes {
         }
 
         ~GameController() {
-            if (interf.Connected) {
+            if ((bool)interf?.Connected) {
                 interf.SetMode(LaunchpadMode.Live);
             }
         }
