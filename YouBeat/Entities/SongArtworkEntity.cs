@@ -24,7 +24,17 @@ namespace YouBeat.Entities {
         public bool NewXTweenComplete { get {                
                 return NewXTween == null || NewXTween?.Completion == 1;
             } }
-        
+        private bool _transitioning = false;
+        public bool Transitioned { get; set; } = false;
+        public bool Transitioning {
+            get { return _transitioning; }
+            set {
+                if (value == true) {
+                    Tween(this, new { _y = -Graphic.HalfHeight }, 120, 0).Ease(Ease.ElasticInOut);
+                }
+                _transitioning = value;
+            }
+        }
 
         public SongArtworkEntity(String artworkpath, float x, float y, bool selected = false) : base(x, y) {
             Image imageGraphic;
@@ -84,6 +94,8 @@ namespace YouBeat.Entities {
             X = _x;
             Graphic.ScaleX = _sx;
             Graphic.ScaleY = _sy;
+            if (Transitioning && Y == -Graphic.HalfHeight)
+                Transitioned = true;
         }
 
     }

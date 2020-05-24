@@ -10,6 +10,18 @@ namespace YouBeat.Entities {
         private Text nameText;
         private String lastName = String.Empty;
         private Image EndImage;
+        private float alpha = 0;
+        private bool _transitioning = false;
+        public bool Transitioned { get; set; } = false;
+        public bool Transitioning {
+            get { return _transitioning; }
+            set {
+                if (value == true) {
+                    Tween(this, new { alpha = 0 }, 120).Ease(Ease.QuadOut);
+                }
+                _transitioning = value;
+            }
+        }
         public HighScoreTextEntity(float x, float y) : base(x, y) {
             var titleLabel = new Text("New High Score!", Globals.CoolFont, Globals.FontSz) {
                 Color = Color.Black
@@ -33,9 +45,20 @@ namespace YouBeat.Entities {
             AddGraphic<Text>(titleLabel);
             AddGraphic<Text>(enterNameLabel);
             AddGraphic<Image>(EndImage);
+            alpha = 1;
         }
 
-        public void UpdateName(String name) {
+        public override void Update() {
+            base.Update();
+            foreach (var graph in Graphics) {
+                graph.Alpha = alpha;
+            }
+            if (Transitioning && Graphic.Alpha == 0) {
+                Transitioned = true;
+            }
+        }
+
+            public void UpdateName(String name) {
             if (!name.Equals(lastName)) {
                 var showEnd = false;
                 if (name.EndsWith("[")) {

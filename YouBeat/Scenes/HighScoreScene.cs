@@ -24,8 +24,12 @@ namespace YouBeat.Scenes {
         public override void Update() {
             base.Update();
             text.UpdateName(_controller.HighScoreName);
-            if (_controller.State == GameState.ReturnToMenu || _controller.State == GameState.Menu) {
+            if (text.Transitioning && text.Transitioned) {
+                _controller.RemoveHold();
+                _controller.MainLoop(); //we need to do this so that we're all set up to transition to the menu scene.
                 Game.SwitchScene(new MenuScene(_controller));
+            } else if (!text.Transitioning && _controller.State == GameState.ReturnToMenuHold) {
+                text.Transitioning = true;                
             }
         }
     }

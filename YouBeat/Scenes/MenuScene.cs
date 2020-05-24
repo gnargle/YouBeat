@@ -136,14 +136,20 @@ namespace YouBeat.Scenes {
         public override void Update() {
             base.Update();
             if (!_controller.AcceptInput)
-                _controller.AcceptInput = true; //we've rturned to the menu from another song, input needs to work now.
+                _controller.AcceptInput = true; //we've returned to the menu from another song, input needs to work now.
             if (_controller.State == GameState.ReturnToTitle || _controller.State == GameState.Title) {
                 Game.SwitchScene(new TitleScene(_controller));
             } else if (_controller.State == GameState.Setup || _controller.State == GameState.PreGameHold) {
-                _controller.OnSongChange = null; //dregister the callbacks to prevent problems
-                _controller.OnMenuStateChange = null;
-                _controller.OnSetDifficulty = null;
-                Game.SwitchScene(new GameScene(_controller));
+                var entList = songEntities.Values.ToList();
+                if (!entList.First().Transitioning) {
+                    entList.ForEach(e => e.Transitioning = true);
+                    detailsEntity.Transitioning = true;
+                } else if (entList.Last().Transitioned) {
+                    _controller.OnSongChange = null; //deregister the callbacks to prevent problems
+                    _controller.OnMenuStateChange = null;
+                    _controller.OnSetDifficulty = null;
+                    Game.SwitchScene(new GameScene(_controller));
+                }
             }         
             if (offScreenState != OffScreenEnum.None) {
                 var songList = songEntities.Keys.ToList();

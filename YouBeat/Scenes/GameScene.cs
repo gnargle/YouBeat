@@ -13,8 +13,10 @@ namespace YouBeat.Scenes {
 
         private const int SOUND_LIMIT = 20;
         private const float FX_VOLUME = 0.2f;
-
+        private bool changingScene = false;
         private ScoreEntity scoreEntity;
+        private FullComboEntity fullComboEntity;
+        private TitleMessageEntity titleMsgEntity;
         private Sound MissSound;
         private Sound BadSound;
         private Sound OKSound;
@@ -59,18 +61,33 @@ namespace YouBeat.Scenes {
         public override void Update() {
             base.Update();
             scoreEntity.UpdateCombo(_controller.Combo, _controller.Score);
-            if (_controller.State == GameState.GameEnding || _controller.State == GameState.GameOver) {
+            if (changingScene) {
+                if (scoreEntity.Transitioned)
+                    if (_controller.State == GameState.HighScoreEntryHold) {
+                        _controller.RemoveHold();
+                        Game.SwitchScene(new HighScoreScene(_controller));
+                    } else if (_controller.State == GameState.ReturnToMenuHold) {
+                        _controller.RemoveHold();
+                        _controller.MainLoop(); //we need to do this so that we're all set up to transition to the menu scene.
+                        Game.SwitchScene(new MenuScene(_controller));
+                    }
+            }
+            else if (_controller.State == GameState.GameEnding || _controller.State == GameState.GameOver) {
                 if (lastState == GameState.Game) {
                     //first time in game ending state, set up the various entities for the end of the song.
-                    if (_controller.Combo == _controller.TotalBeats)
-                        Add(new FullComboEntity(Game.Instance.HalfWidth, Game.Instance.HalfHeight - 150));
-                    Add(new TitleMessageEntity("Press any pad to continue", Game.Instance.HalfWidth, Game.Instance.HalfHeight + 150));
+                    if (_controller.Combo == _controller.TotalBeats) {
+                        fullComboEntity = new FullComboEntity(Game.Instance.HalfWidth, Game.Instance.HalfHeight - 150);
+                        Add(fullComboEntity);
+                    }
+                    titleMsgEntity = new TitleMessageEntity("Press any pad to continue", Game.Instance.HalfWidth, Game.Instance.HalfHeight + 150);
+                    Add(titleMsgEntity);
                 }
-            } else if (_controller.State == GameState.HighScoreEntryHold) {
-                Game.SwitchScene(new HighScoreScene(_controller));
-            } else if (_controller.State == GameState.ReturnToMenu || _controller.State == GameState.Menu) {
-                Game.SwitchScene(new MenuScene(_controller));
-            }
+            } else if (_controller.State == GameState.HighScoreEntryHold || _controller.State == GameState.ReturnToMenuHold) {
+                changingScene = true;
+                scoreEntity.Transitioning = true;
+                if (fullComboEntity != null) fullComboEntity.Transitioning = true;
+                titleMsgEntity.Transitioning = true;
+            } 
             lastState = _controller.State;
         }
 

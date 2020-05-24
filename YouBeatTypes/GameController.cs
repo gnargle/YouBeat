@@ -229,7 +229,7 @@ namespace YouBeatTypes {
                     if (NewHighScore)
                         State = GameState.HighScoreEntryHold;
                     else
-                        State = GameState.ReturnToMenu;
+                        State = GameState.ReturnToMenuHold;
                     break;
                 case GameState.HighScoreEntry:
                     var menuKey = KeyInMenuObject(x, y);
@@ -266,7 +266,7 @@ namespace YouBeatTypes {
                             if (HighScoreName.EndsWith("[")) {
                                 HighScoreName = HighScoreName.Remove(HighScoreName.Length - 1);
                                 SaveHighScore();
-                                State = GameState.ReturnToMenu;
+                                State = GameState.ReturnToMenuHold;
                             } else {
                                 HighScoreName = String.Concat(HighScoreName, "A"); //insert new character.
                             }

@@ -15,8 +15,19 @@ namespace YouBeat.Entities {
         private Image ArrowLeft;
         private Image ArrowRight;
         private Song nextSong;
+        private bool _transitioning = false;
+        public bool Transitioned { get; set; } = false;
         public bool UpdatingSong { get; private set; } = false;
         public bool OffScreen { get { return Y == Game.Instance.Height + Graphic.Height + 10; } }
+        public bool Transitioning {
+            get { return _transitioning; }
+            set {
+                if (value == true) {
+                    Tween(this, new { _y = Game.Instance.Height + Graphic.Height }, 120, 0).Ease(Ease.ElasticOut);
+                }
+                _transitioning = value;
+            }
+        }
         public SongDetailsEntity(Song initialSong, float x, float y) : base(x, y) {
             var imageGraphic = new Image(@"..\..\Sprites\SongDetailsFrame.png");
             imageGraphic.CenterOrigin();

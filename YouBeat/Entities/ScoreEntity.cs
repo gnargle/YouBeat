@@ -13,7 +13,18 @@ namespace YouBeat.Entities {
         private Text _comboLabel;
         private long _lastCombo = 0;
         private long _lastScore = 0;
-        
+        private float alpha = 0;
+        private bool _transitioning = false;
+        public bool Transitioned { get; set; } = false;
+        public bool Transitioning {
+            get { return _transitioning; }
+            set {
+                if (value == true) {
+                    Tween(this, new { alpha = 0 }, 120).Ease(Ease.QuadOut);
+                }
+                _transitioning = value;
+            }
+        }
         public ScoreEntity(float x, float y) : base(x, y) {
             _scoreLabel = new Text("Score:", Globals.CoolFont, Globals.FontSz) {
                 Color = Color.Black                
@@ -38,8 +49,17 @@ namespace YouBeat.Entities {
             AddGraphic<Text>(_comboText);
             AddGraphic<Text>(_scoreLabel);
             AddGraphic<Text>(_comboLabel);
+            Tween(this, new { alpha = 1 }, 120).Ease(Ease.QuadOut);
         }
-
+        public override void Update() {
+            base.Update();
+            foreach (var graph in Graphics) {
+                graph.Alpha = alpha;
+            }
+            if (Transitioning && Graphic.Alpha == 0) {
+                Transitioned = true;
+            }
+        }
         public void UpdateCombo(long combo, long score) {
             if (_lastCombo != combo) {
                 _scoreText.String = $"{score}";

@@ -11,7 +11,7 @@ namespace YouBeat.Entities {
         private float alpha = 0;
         private float _y;
         private bool _transitioning = false;
-        public bool Transitioned = false;
+        public bool Transitioned { get; set; } = false;
         public bool Transitioning { get { return _transitioning; } set {
                 if (value == true) {
                     Tween(this, new { alpha = 0 }, 120).Ease(Ease.QuadOut);
