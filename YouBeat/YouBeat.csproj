@@ -68,6 +68,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Entities\FullComboEntity.cs" />
+    <Compile Include="Entities\HighScoreTitleEntity.cs" />
     <Compile Include="Entities\ScoreEntity.cs" />
     <Compile Include="Entities\InGameSongDetailsEntity.cs" />
     <Compile Include="Scenes\BaseScene.cs" />
@@ -78,6 +79,7 @@
     <Compile Include="Entities\TitleEntity.cs" />
     <Compile Include="Entities\TitleMessageEntity.cs" />
     <Compile Include="Scenes\GameScene.cs" />
+    <Compile Include="Scenes\HighScoreScene.cs" />
     <Compile Include="Scenes\MenuScene.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

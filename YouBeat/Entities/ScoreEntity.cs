@@ -13,25 +13,25 @@ namespace YouBeat.Entities {
         private Text _comboLabel;
         private long _lastCombo = 0;
         private long _lastScore = 0;
-        private const int fontSz = 72;
+        
         public ScoreEntity(float x, float y) : base(x, y) {
-            _scoreLabel = new Text("Score:", @"..\..\Fonts\AstronBoyWonder.ttf", fontSz) {
+            _scoreLabel = new Text("Score:", @"..\..\Fonts\AstronBoyWonder.ttf", Globals.FontSz) {
                 Color = Color.Black                
             };
             _scoreLabel.CenterTextOriginX();
-            _scoreText = new Text("0", @"..\..\Fonts\AstronBoyWonder.ttf", fontSz) {
+            _scoreText = new Text("0", @"..\..\Fonts\AstronBoyWonder.ttf", Globals.FontSz) {
                 Color = Color.Black,
-                Y = fontSz
+                Y = Globals.FontSz
             };
             _scoreText.CenterTextOriginX();            
-            _comboLabel = new Text("Combo:", @"..\..\Fonts\AstronBoyWonder.ttf", fontSz) {
+            _comboLabel = new Text("Combo:", @"..\..\Fonts\AstronBoyWonder.ttf", Globals.FontSz) {
                 Color = Color.Black,
-                Y = fontSz * 2
+                Y = Globals.FontSz * 2
             };
             _comboLabel.CenterTextOriginX();
-            _comboText = new Text("0", @"..\..\Fonts\AstronBoyWonder.ttf", fontSz) {
+            _comboText = new Text("0", @"..\..\Fonts\AstronBoyWonder.ttf", Globals.FontSz) {
                 Color = Color.Black,
-                Y = fontSz * 3
+                Y = Globals.FontSz * 3
             };
             _comboText.CenterTextOriginX();
             AddGraphic<Text>(_scoreText);

@@ -130,10 +130,13 @@ namespace YouBeat.Scenes {
 
         public MenuScene(GameController gameController) : base(gameController) {
             SetupMenu();
+            _controller.RemoveHold();
         }
 
         public override void Update() {
             base.Update();
+            if (!_controller.AcceptInput)
+                _controller.AcceptInput = true; //we've rturned to the menu from another song, input needs to work now.
             if (_controller.State == GameState.ReturnToTitle || _controller.State == GameState.Title) {
                 Game.SwitchScene(new TitleScene(_controller));
             } else if (_controller.State == GameState.Setup || _controller.State == GameState.PreGameHold) {

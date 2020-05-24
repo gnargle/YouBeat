@@ -227,7 +227,7 @@ namespace YouBeatTypes {
                     break;
                 case GameState.GameOver:
                     if (NewHighScore)
-                        State = GameState.HighScoreEntry;
+                        State = GameState.HighScoreEntryHold;
                     else
                         State = GameState.ReturnToMenu;
                     break;
@@ -496,9 +496,19 @@ namespace YouBeatTypes {
             }
         }
 
-        public void StartGame() {
-            SetSong(CurrentSong);
-            State = GameState.Game;
+        public void RemoveHold() {
+            switch (State) {
+                case GameState.PreGameHold:
+                    SetSong(CurrentSong);
+                    State = GameState.Game;
+                    break;
+                case GameState.HighScoreEntryHold:
+                    State = GameState.HighScoreEntry;
+                    break;
+                case GameState.ReturnToMenuHold:
+                    State = GameState.ReturnToMenu;
+                    break;
+            }
         }
 
         public void MainLoop() {
@@ -585,7 +595,9 @@ namespace YouBeatTypes {
                     } else
                         State = GameState.PreGameHold;
                     break;
-                case GameState.PreGameHold:
+                case GameState.PreGameHold: //we don't really need these, but it's nice for clarity.
+                case GameState.HighScoreEntryHold:
+                case GameState.ReturnToMenuHold:
                     break; //do nothing - we're waiting for the scene transition before we start.
                 case GameState.Game:
                     if (audioFile == null || audioFile.CurrentTime == null)
@@ -613,6 +625,8 @@ namespace YouBeatTypes {
                             songVolumeTimer.Elapsed += SongVolumeTimer_Elapsed;
                             songVolumeTimer.AutoReset = true;
                             songVolumeTimer.Enabled = true;
+                        } else {
+                            State = GameState.GameOver;
                         }
                     }
                     break;
@@ -749,7 +763,8 @@ namespace YouBeatTypes {
 
         private void SongVolumeTimer_Elapsed(object sender, ElapsedEventArgs e) {
             if (State == GameState.GameEnding && audioFile != null && outputDevice != null) {
-                if (audioFile.CurrentTime >= TimeSpan.FromMilliseconds(CurrentSong.EndTime)) {
+                var endTime = CurrentSong.EndTime > 0 ? TimeSpan.FromMilliseconds(CurrentSong.EndTime) : audioFile.TotalTime;
+                if (audioFile.CurrentTime >= endTime) {
                     if (outputDevice.Volume >= 0.01)
                         outputDevice.Volume -= 0.01f;
                     else {

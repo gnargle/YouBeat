@@ -27,7 +27,7 @@ namespace YouBeat.Scenes {
 
         public GameScene(GameController gameController) : base(gameController) {
             SetupGame();
-            _controller.StartGame();
+            _controller.RemoveHold();
         }
 
         private void SetupGame() {
@@ -64,7 +64,12 @@ namespace YouBeat.Scenes {
                     //first time in game ending state, set up the various entities for the end of the song.
                     if (_controller.Combo == _controller.TotalBeats)
                         Add(new FullComboEntity(Game.Instance.HalfWidth, Game.Instance.HalfHeight - 150));
+                    Add(new TitleMessageEntity("Press any pad to continue", Game.Instance.HalfWidth, Game.Instance.HalfHeight + 150));
                 }
+            } else if (_controller.State == GameState.HighScoreEntryHold) {
+                Game.SwitchScene(new HighScoreScene(_controller));
+            } else if (_controller.State == GameState.ReturnToMenu || _controller.State == GameState.Menu) {
+                Game.SwitchScene(new MenuScene(_controller));
             }
             lastState = _controller.State;
         }
