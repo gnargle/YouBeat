@@ -15,21 +15,21 @@ namespace YouBeat.Entities {
         private long _lastScore = 0;
         
         public ScoreEntity(float x, float y) : base(x, y) {
-            _scoreLabel = new Text("Score:", @"..\..\Fonts\AstronBoyWonder.ttf", Globals.FontSz) {
+            _scoreLabel = new Text("Score:", Globals.CoolFont, Globals.FontSz) {
                 Color = Color.Black                
             };
             _scoreLabel.CenterTextOriginX();
-            _scoreText = new Text("0", @"..\..\Fonts\AstronBoyWonder.ttf", Globals.FontSz) {
+            _scoreText = new Text("0", Globals.CoolFont, Globals.FontSz) {
                 Color = Color.Black,
                 Y = Globals.FontSz
             };
             _scoreText.CenterTextOriginX();            
-            _comboLabel = new Text("Combo:", @"..\..\Fonts\AstronBoyWonder.ttf", Globals.FontSz) {
+            _comboLabel = new Text("Combo:", Globals.CoolFont, Globals.FontSz) {
                 Color = Color.Black,
                 Y = Globals.FontSz * 2
             };
             _comboLabel.CenterTextOriginX();
-            _comboText = new Text("0", @"..\..\Fonts\AstronBoyWonder.ttf", Globals.FontSz) {
+            _comboText = new Text("0", Globals.CoolFont, Globals.FontSz) {
                 Color = Color.Black,
                 Y = Globals.FontSz * 3
             };

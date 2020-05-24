@@ -9,13 +9,24 @@ using YouBeatTypes;
 
 namespace YouBeat.Scenes {
     class HighScoreScene : BaseScene{
+        private HighScoreTextEntity text;        
         public HighScoreScene(GameController gameController) : base(gameController) {
             SetupScoreEntry();
             _controller.RemoveHold();
         }
 
         public void SetupScoreEntry() {
-            Add(new HighScoreTitleEntity(Game.Instance.HalfWidth, Game.Instance.HalfHeight - 200));
+            AddGraphic<Image>(new Image(@"..\..\Backgrounds\bg.png"));
+            text = new HighScoreTextEntity(Game.Instance.HalfWidth, Game.Instance.HalfHeight - 300);
+            Add(text);
+        }
+
+        public override void Update() {
+            base.Update();
+            text.UpdateName(_controller.HighScoreName);
+            if (_controller.State == GameState.ReturnToMenu || _controller.State == GameState.Menu) {
+                Game.SwitchScene(new MenuScene(_controller));
+            }
         }
     }
 }

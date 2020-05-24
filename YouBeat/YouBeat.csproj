@@ -68,7 +68,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Entities\FullComboEntity.cs" />
-    <Compile Include="Entities\HighScoreTitleEntity.cs" />
+    <Compile Include="Entities\HighScoreTextEntity.cs" />
     <Compile Include="Entities\ScoreEntity.cs" />
     <Compile Include="Entities\InGameSongDetailsEntity.cs" />
     <Compile Include="Scenes\BaseScene.cs" />
@@ -112,6 +112,7 @@
     <Content Include="FX\Blip_Perfect.wav" />
     <Content Include="Sprites\arrow.png" />
     <Content Include="Sprites\DefaultArt.png" />
+    <Content Include="Sprites\End.png" />
     <Content Include="Sprites\Exit.png" />
     <Content Include="Sprites\FullCombo.png" />
     <Content Include="Sprites\logo.png" />
