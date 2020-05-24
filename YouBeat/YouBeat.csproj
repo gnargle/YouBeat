@@ -67,6 +67,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Entities\FullComboEntity.cs" />
     <Compile Include="Entities\ScoreEntity.cs" />
     <Compile Include="Entities\InGameSongDetailsEntity.cs" />
     <Compile Include="Scenes\BaseScene.cs" />
@@ -110,6 +111,7 @@
     <Content Include="Sprites\arrow.png" />
     <Content Include="Sprites\DefaultArt.png" />
     <Content Include="Sprites\Exit.png" />
+    <Content Include="Sprites\FullCombo.png" />
     <Content Include="Sprites\logo.png" />
     <Content Include="Sprites\messageend.png" />
     <Content Include="Sprites\Perfect.png" />

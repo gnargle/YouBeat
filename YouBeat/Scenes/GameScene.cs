@@ -14,7 +14,7 @@ namespace YouBeat.Scenes {
         private const int SOUND_LIMIT = 20;
         private const float FX_VOLUME = 0.2f;
 
-        private ScoreEntity comboEntity;
+        private ScoreEntity scoreEntity;
         private Sound MissSound;
         private Sound BadSound;
         private Sound OKSound;
@@ -22,6 +22,7 @@ namespace YouBeat.Scenes {
         private Sound GreatSound;
         private Sound PerfectSound;
         private Sound[] soundCache;
+        private GameState lastState;
         private int i = 0;
 
         public GameScene(GameController gameController) : base(gameController) {
@@ -32,8 +33,8 @@ namespace YouBeat.Scenes {
         private void SetupGame() {
             _controller.OnHitReg = HitRegHandler;
             AddGraphic<Image>(new Image(@"..\..\Backgrounds\bg.png"));
-            comboEntity = new ScoreEntity(Game.Instance.Width - 250, 50);
-            Add(comboEntity);
+            scoreEntity = new ScoreEntity(Game.Instance.Width - 250, 50);
+            Add(scoreEntity);
             MissSound = new Sound(@"..\..\FX\Miss.wav") {
                 Volume = FX_VOLUME
             };
@@ -57,7 +58,15 @@ namespace YouBeat.Scenes {
         }
         public override void Update() {
             base.Update();
-            comboEntity.UpdateCombo(_controller.Combo, _controller.Score);
+            scoreEntity.UpdateCombo(_controller.Combo, _controller.Score);
+            if (_controller.State == GameState.GameEnding || _controller.State == GameState.GameOver) {
+                if (lastState == GameState.Game) {
+                    //first time in game ending state, set up the various entities for the end of the song.
+                    if (_controller.Combo == _controller.TotalBeats)
+                        Add(new FullComboEntity(Game.Instance.HalfWidth, Game.Instance.HalfHeight - 150));
+                }
+            }
+            lastState = _controller.State;
         }
 
         public void HitRegHandler(ScoreVelo score) {
