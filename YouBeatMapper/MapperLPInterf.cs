@@ -21,6 +21,11 @@ namespace YouBeatMapper {
         public WaveOut WvOut { get; set; }
         public const int BEAT_DUR = 250;
 
+        ~MapperLPInterf() {
+            if (interf != null)
+                interf.SetMode(LaunchpadMode.Live);
+        }
+
         public MapperLPInterf() {
             controller = new GameController(ControllerCreator.Mapper);
             interf = new Interface();
@@ -29,6 +34,7 @@ namespace YouBeatMapper {
                 if (interf.connect(connected[0])) {
                     interf.OnLaunchpadKeyDown += KeyDown;
                     interf.OnLaunchpadKeyUp += KeyUp;
+                    interf.SetMode(LaunchpadMode.Programmer);
                     interf.clearAllLEDs();
                 }
                 int velo = 33;

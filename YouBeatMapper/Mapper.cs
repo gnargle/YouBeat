@@ -346,7 +346,7 @@ namespace YouBeatMapper {
             {
                 if (saveFileDialog1.ShowDialog() == DialogResult.OK)
                 {
-                    SongFile = saveFileDialog1.FileName;
+                    SongFile = Path.ChangeExtension(saveFileDialog1.FileName, "trk"); 
                     CurrentSong.SongName = Path.GetFileNameWithoutExtension(SongFile);
                     SaveSong(CurrentSong);
                 }
