@@ -89,6 +89,7 @@
     <None Include="App.config" />
     <None Include="Fonts\AstronBoyWonder.ttf" />
     <None Include="Fonts\Exo-Medium.ttf" />
+    <None Include="Fonts\NotoSansJP-Medium.otf" />
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>

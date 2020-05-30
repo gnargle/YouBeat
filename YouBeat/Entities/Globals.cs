@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace YouBeat.Entities {
     public static class Globals {
-        public const string GeneralFont = @"..\..\Fonts\Exo-Medium.ttf";
+        public const string GeneralFont = @"..\..\Fonts\NotoSansJP-Medium.otf";
         public const string CoolFont = @"..\..\Fonts\AstronBoyWonder.ttf";
         public const int FontSz = 72;
     }
