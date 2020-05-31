@@ -31,6 +31,7 @@ namespace YouBeat {
                 game.Debugger.ToggleKey = Key.End;
                 game.Debugger.ShowPerformance(5);
             }
+            game.EnableQuitButton = false;
             game.Color = Color.Grey;
             game.Start(new TitleScene());
         }        
