@@ -11,7 +11,8 @@ namespace YouBeat.Scenes {
     class MenuScene : BaseScene {
 
         private Dictionary<Song, SongArtworkEntity> songEntities = new Dictionary<Song, SongArtworkEntity>();
-        private SongDetailsEntity detailsEntity;
+        private SongDetailsEntity songDetailsEntity;
+        private ScoreDetailsEntity scoreDetailsEntity;
 
         private enum OffScreenEnum { None = 0, Left = 1, Right = 2 }
         private OffScreenEnum offScreenState = OffScreenEnum.None;
@@ -82,7 +83,8 @@ namespace YouBeat.Scenes {
                 }
                 songEntities.OrderBy(p => p.Value.X);
             }
-            detailsEntity.ChangeSong(newSong);
+            songDetailsEntity.ChangeSong(newSong);
+            scoreDetailsEntity.ChangeSong(newSong);
             NextSound.Play();
         }
 
@@ -104,26 +106,28 @@ namespace YouBeat.Scenes {
                 currX = songEnt.X + SongArtworkEntity.SubSize + SongArtworkEntity.SubGap;                        
             }
             songEntities.OrderBy(p => p.Value.X);            
-            detailsEntity = new SongDetailsEntity(_controller.CurrentSong, Game.Instance.HalfWidth, Game.Instance.Height - 15);
-            Add(detailsEntity);
+            songDetailsEntity = new SongDetailsEntity(_controller.CurrentSong, Game.Instance.HalfWidth, Game.Instance.Height - 15);
+            Add(songDetailsEntity);
+            scoreDetailsEntity = new ScoreDetailsEntity(_controller.CurrentSong, 255, Game.Instance.HalfHeight-150);
+            Add(scoreDetailsEntity);
             NextSound = new Sound(@"..\..\FX\Next.wav");
 
             _controller.AcceptInput = true; //all tiles generated, now the user can swap them to their content without causing mixups
         }
 
         private void OnSetDifficulty(Difficulty difficulty) {
-            detailsEntity.ChangeDifficulty(difficulty);
+            songDetailsEntity.ChangeDifficulty(difficulty);
         }
 
         private void OnMenuStateChange(MenuState newMenuState, MenuState prevMenuState) {
             switch (prevMenuState) {
                 case MenuState.SongSelect:
                     if (newMenuState == MenuState.DifficultySelect)
-                        detailsEntity.ShowDifficulty(true);
+                        songDetailsEntity.ShowDifficulty(true);
                     break;
                 case MenuState.DifficultySelect:
                     if (newMenuState == MenuState.SongSelect)
-                        detailsEntity.ShowDifficulty(false);
+                        songDetailsEntity.ShowDifficulty(false);
                     break;
             }
         }
@@ -138,12 +142,23 @@ namespace YouBeat.Scenes {
             if (!_controller.AcceptInput)
                 _controller.AcceptInput = true; //we've returned to the menu from another song, input needs to work now.
             if (_controller.State == GameState.ReturnToTitle || _controller.State == GameState.Title) {
-                Game.SwitchScene(new TitleScene(_controller));
+                var entList = songEntities.Values.ToList();
+                if (!entList.First().Transitioning) {
+                    entList.ForEach(e => e.Transitioning = true);
+                    songDetailsEntity.Transitioning = true;
+                    scoreDetailsEntity.Transitioning = true;
+                } else if (entList.Last().Transitioned) {
+                    _controller.OnSongChange = null; //deregister the callbacks to prevent problems
+                    _controller.OnMenuStateChange = null;
+                    _controller.OnSetDifficulty = null;
+                    Game.SwitchScene(new TitleScene(_controller));
+                }                
             } else if (_controller.State == GameState.Setup || _controller.State == GameState.PreGameHold) {
                 var entList = songEntities.Values.ToList();
                 if (!entList.First().Transitioning) {
                     entList.ForEach(e => e.Transitioning = true);
-                    detailsEntity.Transitioning = true;
+                    songDetailsEntity.Transitioning = true;
+                    scoreDetailsEntity.Transitioning = true;
                 } else if (entList.Last().Transitioned) {
                     _controller.OnSongChange = null; //deregister the callbacks to prevent problems
                     _controller.OnMenuStateChange = null;
@@ -195,13 +210,13 @@ namespace YouBeat.Scenes {
                             ent.SetNewX(currX);
                         }
                     }
-                    detailsEntity.BringBackToView();
+                    songDetailsEntity.BringBackToView();
                     _controller.SongSelectActive = true;
                     offScreenState = OffScreenEnum.None;
                 }
-            } else if (detailsEntity.UpdatingSong) {
-                if (detailsEntity.OffScreen)
-                    detailsEntity.BringBackToView();
+            } else if (songDetailsEntity.UpdatingSong) {
+                if (songDetailsEntity.OffScreen)
+                    songDetailsEntity.BringBackToView();
             }
         }
     }

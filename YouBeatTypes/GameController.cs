@@ -226,10 +226,13 @@ namespace YouBeatTypes {
                     pad.RegisterHit();
                     break;
                 case GameState.GameOver:
+                    NewHighScore = ResolveHighScore();
                     if (NewHighScore)
                         State = GameState.HighScoreEntryHold;
-                    else
+                    else {
+                        SaveCombo();
                         State = GameState.ReturnToMenuHold;
+                    }
                     break;
                 case GameState.HighScoreEntry:
                     var menuKey = KeyInMenuObject(x, y);
@@ -279,11 +282,21 @@ namespace YouBeatTypes {
             }
         }        
 
+        private void SaveCombo() {
+            if (MaxCombo > CurrentSong.ScoreList.MaxCombo) {
+                CurrentSong.ScoreList.MaxCombo = MaxCombo;
+                var saveList = JsonConvert.SerializeObject(CurrentSong.ScoreList);
+                File.WriteAllText(Path.Combine(Directory.GetCurrentDirectory(), "Songs", CurrentSong.SongName, CurrentSong.SongName + "_list.js"), saveList);
+            }
+        }
+
         private void SaveHighScore() {
             var newHighScore = new Tuple<string, long>(HighScoreName, Score);
             CurrentSong.ScoreList.Scores.Add(newHighScore);
             CurrentSong.ScoreList.Scores = CurrentSong.ScoreList.Scores.OrderByDescending(s => s.Item2).ToList();
             CurrentSong.ScoreList.Scores.RemoveAt(10);
+            if (MaxCombo > CurrentSong.ScoreList.MaxCombo)
+                CurrentSong.ScoreList.MaxCombo = MaxCombo;
             var saveList = JsonConvert.SerializeObject(CurrentSong.ScoreList);
             File.WriteAllText(Path.Combine(Directory.GetCurrentDirectory(), "Songs", CurrentSong.SongName, CurrentSong.SongName + "_list.js"), saveList);
         }
@@ -770,8 +783,7 @@ namespace YouBeatTypes {
                     else {
                         State = GameState.GameOver;
                         songVolumeTimer.AutoReset = false;
-                        songVolumeTimer.Enabled = false;
-                        NewHighScore = ResolveHighScore();
+                        songVolumeTimer.Enabled = false;                        
                     }
                 }
             } else {

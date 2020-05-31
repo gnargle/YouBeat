@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 
 namespace YouBeatTypes {
     public class ScoreList {
+        public long MaxCombo { get; set; }
         public List<Tuple<String, long>> Scores { get; set; }
         public ScoreList() { Scores = new List<Tuple<string, long>>(); }
     }

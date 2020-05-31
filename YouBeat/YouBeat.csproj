@@ -69,6 +69,7 @@
   <ItemGroup>
     <Compile Include="Entities\FullComboEntity.cs" />
     <Compile Include="Entities\HighScoreTextEntity.cs" />
+    <Compile Include="Entities\ScoreDetailsEntity.cs" />
     <Compile Include="Entities\ScoreEntity.cs" />
     <Compile Include="Entities\InGameSongDetailsEntity.cs" />
     <Compile Include="Scenes\BaseScene.cs" />
@@ -119,6 +120,7 @@
     <Content Include="Sprites\logo.png" />
     <Content Include="Sprites\messageend.png" />
     <Content Include="Sprites\Perfect.png" />
+    <Content Include="Sprites\ScoreDetailsFrame.png" />
     <Content Include="Sprites\SongDetailsFrame.png" />
   </ItemGroup>
   <ItemGroup />

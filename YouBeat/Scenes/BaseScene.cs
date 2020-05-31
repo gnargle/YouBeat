@@ -13,17 +13,10 @@ namespace YouBeat.Scenes {
 
         public BaseScene(GameController gameController) : base() {
             _controller = gameController;
-            /*new Thread(delegate () {
-                _controller.ContinuousLoop(); //despatch this into a separate thread. Don't tie responsiveness to the UI refresh.
-            }).Start();*/
         }
 
         public BaseScene() : base() {
             _controller = new GameController(ControllerCreator.Youbeat);
-            //this doesn't work, it dies when we change scene. Thought the thread would prevent this???
-            /*new Thread(delegate () {
-                _controller.ContinuousLoop(); //despatch this into a separate thread. Don't tie responsiveness to the UI refresh.
-            }).Start();*/
         }
 
         public override void Update() {

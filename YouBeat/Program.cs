@@ -17,7 +17,7 @@ namespace YouBeat {
 
         const int SW_HIDE = 0;
         const int SW_SHOW = 5;
-        static void Main(string[] args) { 
+        static void Main(string[] args) {
             var handle = GetConsoleWindow();
             // Hide
             ShowWindow(handle, SW_HIDE);
@@ -32,7 +32,7 @@ namespace YouBeat {
                 game.Debugger.ShowPerformance(5);
             }
             game.Color = Color.Grey;
-            game.Start(new TitleScene());            
+            game.Start(new TitleScene());
         }        
     }    
 }

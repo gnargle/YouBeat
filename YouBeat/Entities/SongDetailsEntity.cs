@@ -69,7 +69,7 @@ namespace YouBeat.Entities {
 
         public void ChangeSong(Song newSong) {
             nextSong = newSong;
-            Tween(this, new { _y = Game.Instance.Height + Graphic.Height + 10 }, 30, 0).Ease(Ease.ElasticOut);
+            Tween(this, new { _y = Game.Instance.Height + Graphic.Height + 10 }, 30, 0).Ease(Ease.BounceOut);
             UpdatingSong = true;
         }
 
