@@ -587,7 +587,8 @@ namespace YouBeatTypes {
                     break;
                 case GameState.Setup:
                     StopSong();
-                    interf.clearAllLEDs();                    
+                    interf.clearAllLEDs();            
+                    Beats.Clear();
                     if (SelectedDifficulty == Difficulty.Easy)
                         Beats.AddRange(CurrentSong.EasyBeats);
                     else if (SelectedDifficulty == Difficulty.Advanced)
@@ -673,6 +674,7 @@ namespace YouBeatTypes {
         }
 
         ~GameController() {
+            StopSong();
             if ((bool)interf?.Connected) {
                 interf.SetMode(LaunchpadMode.Live);
             }
