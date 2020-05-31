@@ -67,6 +67,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Entities\CountsEntity.cs" />
     <Compile Include="Entities\FullComboEntity.cs" />
     <Compile Include="Entities\HighScoreTextEntity.cs" />
     <Compile Include="Entities\ScoreDetailsEntity.cs" />

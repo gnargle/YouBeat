@@ -17,6 +17,7 @@ namespace YouBeat.Scenes {
         private ScoreEntity scoreEntity;
         private FullComboEntity fullComboEntity;
         private TitleMessageEntity titleMsgEntity;
+        private CountsEntity countsEntity;
         private Sound MissSound;
         private Sound BadSound;
         private Sound OKSound;
@@ -37,6 +38,8 @@ namespace YouBeat.Scenes {
             AddGraphic<Image>(new Image(@"..\..\Backgrounds\bg.png"));
             scoreEntity = new ScoreEntity(Game.Instance.Width - 250, 50);
             Add(scoreEntity);
+            countsEntity = new CountsEntity(Game.Instance.HalfWidth, 20);
+            Add(countsEntity);
             MissSound = new Sound(@"..\..\FX\Miss.wav") {
                 Volume = FX_VOLUME
             };
@@ -61,6 +64,7 @@ namespace YouBeat.Scenes {
         public override void Update() {
             base.Update();
             scoreEntity.UpdateCombo(_controller.Combo, _controller.Score);
+            countsEntity.UpdateCounts(_controller);
             if (changingScene) {
                 if (scoreEntity.Transitioned)
                     if (_controller.State == GameState.HighScoreEntryHold) {
@@ -134,6 +138,7 @@ namespace YouBeat.Scenes {
                     copySound = MissSound;
                     break;
             }
+            //need to change this to use a cache created at song start to help the framerate out
             Add(new Particle(Game.Instance.HalfWidth + randX, Game.Instance.HalfHeight, sprite, width, height) {
                 Alpha = 1,
                 FinalAlpha = 0,

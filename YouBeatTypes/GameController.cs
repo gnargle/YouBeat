@@ -29,6 +29,7 @@ namespace YouBeatTypes {
 
         private object ComboLock = new object();
         private object ScoreLock = new object();
+        private object CountLock = new object();
 
         private Timer songVolumeTimer;
         private bool reachedPreviewEnd = false;
@@ -69,6 +70,12 @@ namespace YouBeatTypes {
         public bool LoopActive { get; set; } = true;
         public bool SongSelectActive { get; set; } = true;
         public bool AcceptInput { get; set; } = true;
+        public int Misses { get; private set; } = 0;
+        public int Bads { get; private set; } = 0;
+        public int OKs { get; private set; } = 0;
+        public int Goods { get; set; } = 0;
+        public int Greats { get; set; } = 0;
+        public int Perfects { get; set; } = 0;
 
         public void AddToScore(long moreScore) {
             lock (ScoreLock) {
@@ -114,7 +121,36 @@ namespace YouBeatTypes {
                 }
             }
         }
-        
+
+        private void ResetCounts() {
+            Misses = 0; Bads = 0; OKs = 0; Goods = 0; Greats = 0; Perfects = 0;
+        }
+
+        public void AddToHits(ScoreVelo scoreVelo) {
+            lock (CountLock) {
+                switch (scoreVelo) {
+                    case ScoreVelo.Miss:
+                        Misses++;
+                        break;
+                    case ScoreVelo.Bad:
+                        Bads++;
+                        break;
+                    case ScoreVelo.OK:
+                        OKs++;
+                        break;
+                    case ScoreVelo.Good:
+                        Goods++;
+                        break;
+                    case ScoreVelo.Great:
+                        Greats++;
+                        break;
+                    case ScoreVelo.Perfect:
+                        Perfects++;
+                        break;
+                }
+            }
+        }
+
         private MenuKey KeyInMenuObject(int x, int y) {
             var leftArrow = new List<Pitch>() { Pitch.A5, Pitch.ASharp5, Pitch.B5, Pitch.C6, Pitch.CSharp6, Pitch.B4, Pitch.C5, Pitch.CSharp4 };
             var rightArrow = new List<Pitch>() { Pitch.D0, Pitch.DSharp0, Pitch.E0, Pitch.F0, Pitch.FSharp0, Pitch.DSharp1, Pitch.E1, Pitch.D2 };
@@ -589,6 +625,7 @@ namespace YouBeatTypes {
                     StopSong();
                     interf.clearAllLEDs();            
                     Beats.Clear();
+                    ResetCounts();
                     if (SelectedDifficulty == Difficulty.Easy)
                         Beats.AddRange(CurrentSong.EasyBeats);
                     else if (SelectedDifficulty == Difficulty.Advanced)

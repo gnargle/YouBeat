@@ -84,6 +84,7 @@ namespace YouBeatTypes
                 }
                 _controller.OnHitReg?.Invoke(_currentVelo);
                 _controller.AddToScore(score);
+                _controller.AddToHits(_currentVelo);
                 PastBeats.Add(CurrentBeat);
                 CurrentBeat = null;
             }
@@ -114,6 +115,7 @@ namespace YouBeatTypes
                         ClearPad();
                         PastBeats.Add(CurrentBeat);
                         _controller.UpdateCombo(ComboChange.Break);
+                        _controller.AddToHits(_currentVelo);
                         _controller.OnHitReg?.Invoke(_currentVelo);
                         CurrentBeat = null;
                     } else if (time > CurrentBeat.HitTime + (_controller.HalfSep + _controller.Separation * 4))
