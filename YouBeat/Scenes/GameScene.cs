@@ -138,7 +138,7 @@ namespace YouBeat.Scenes {
                     copySound = MissSound;
                     break;
             }
-            //need to change this to use a cache created at song start to help the framerate out
+            //TODO: need to change this to use a cache created at song start to help the framerate out
             Add(new Particle(Game.Instance.HalfWidth + randX, Game.Instance.HalfHeight, sprite, width, height) {
                 Alpha = 1,
                 FinalAlpha = 0,
