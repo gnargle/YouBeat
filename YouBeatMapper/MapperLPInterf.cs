@@ -22,7 +22,7 @@ namespace YouBeatMapper {
         public const int BEAT_DUR = 250;
 
         ~MapperLPInterf() {
-            if (interf != null)
+            if (interf != null && interf.Connected)
                 interf.SetMode(LaunchpadMode.Live);
         }
 

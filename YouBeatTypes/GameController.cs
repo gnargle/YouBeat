@@ -735,6 +735,8 @@ namespace YouBeatTypes {
                         interf.clearAllLEDs();
                     }
                 }
+                if (!Directory.Exists("Songs"))
+                    Directory.CreateDirectory("Songs");
                 songZips = Directory.GetFiles($"Songs", "*.trk");
                 foreach (var SongFile in songZips) {
                     var SongName = Path.GetFileNameWithoutExtension(SongFile);
