@@ -3,7 +3,7 @@
 YouBeat is a Jubeat-style game designed for midi controllers, specifically, the Novation Launchpad. It's written in pure C#, utilising SFML and Otter.
 Being purely 2D, it's ultra-lightweight, and will run on pretty much anything. Here it is running on a Surface Go!
 
-![YouBeat Title Screen](/Images/youbeat_title.jpg){:height="50%" width="50%"}
+![YouBeat Title Screen](/Images/youbeat_title.jpg?s=50)
 ![YouBeat Menu](/Images/youbeat_menu.jpg)
 ![YouBeat Main Game Screen 1](/Images/youbeat_game1.jpg)
 ![YouBeat Main Game Screen 2](/Images/youbeat_game2.jpg)
