@@ -3,6 +3,13 @@
 YouBeat is a Jubeat-style game designed for midi controllers, specifically, the Novation Launchpad. It's written in pure C#, utilising SFML and Otter.
 Being purely 2D, it's ultra-lightweight, and will run on pretty much anything. Here it is running on a Surface Go!
 
+![YouBeat Title Screen](/Images/youbeat_title.jpg)
+![YouBeat Menu](/Images/youbeat_menu.jpg)
+![YouBeat Main Game Screen 1](/Images/youbeat_game1.jpg)
+![YouBeat Main Game Screen 2](/Images/youbeat_game2.jpg)
+![YouBeat Main Game Screen 3](/Images/youbeat_game3.jpg)
+![YouBeat High Score Entry](/Images/youbeat_hiscore.jpg)
+
 [Images here when I upload them]
 
 Check the releases if you just want to try the game. It comes with a (terrible, metronome only) sample beatmap to give you an idea of how it plays.
@@ -18,7 +25,7 @@ In theory, supporting non-RGB Launchpads would be possible, but the experience w
 
 ##YouBeat Mapper
 
-[Mapper Image]
+![YouBeat Mapper Main Screen](/Images/youbeatmapper.png)
 
 Included in the release/solution is a mapper for making your own songs. A core goal of this project was to provide the mapping tools with the game in all instances - 
 in my eyes this promotes a healthy scene and should encourage more people to make maps. It's how OSU! does it, after all.
