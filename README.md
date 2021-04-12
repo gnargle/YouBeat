@@ -21,7 +21,7 @@ any of them should work. The MiniMk3 is cheap and really nice, though, highly re
 
 In theory, supporting non-RGB Launchpads would be possible, but the experience would be sub-par, I don't think it'd be easy to distinguish the different timing states.
 
-##YouBeat Mapper
+## YouBeat Mapper
 
 ![YouBeat Mapper Main Screen](/Images/youbeatmapper.png)
 
