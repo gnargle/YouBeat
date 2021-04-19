@@ -7,13 +7,9 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "launchpad test", "launchpad
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "YouBeatTypes", "YouBeatTypes\YouBeatTypes.csproj", "{B9DB3148-EC61-4402-9271-564CB0C78C44}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "launchpad-dot-net", "..\launchpad-dot-net\launchpad-dot-net\launchpad-dot-net.csproj", "{2784C4AF-3B96-471B-91B0-1A11C342D375}"
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "YouBeatMapper", "YouBeatMapper\YouBeatMapper.csproj", "{67336499-3A38-4D2C-A117-6389EBBF3710}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "YouBeat", "YouBeat\YouBeat.csproj", "{40123E6B-596D-455A-94F6-95757C8E7DE5}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Otter", "..\Otter-7615991da1d8e9d2d6f4c606767585858f9d0936\Otter\Otter.csproj", "{236485C2-A7BA-4DCD-808A-B3A634764402}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -49,18 +45,6 @@ Global
 		{B9DB3148-EC61-4402-9271-564CB0C78C44}.Release|Any CPU.Build.0 = Release|Any CPU
 		{B9DB3148-EC61-4402-9271-564CB0C78C44}.Release|x86.ActiveCfg = Release|Any CPU
 		{B9DB3148-EC61-4402-9271-564CB0C78C44}.Release|x86.Build.0 = Release|Any CPU
-		{2784C4AF-3B96-471B-91B0-1A11C342D375}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{2784C4AF-3B96-471B-91B0-1A11C342D375}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{2784C4AF-3B96-471B-91B0-1A11C342D375}.Debug|x86.ActiveCfg = Debug|Any CPU
-		{2784C4AF-3B96-471B-91B0-1A11C342D375}.Debug|x86.Build.0 = Debug|Any CPU
-		{2784C4AF-3B96-471B-91B0-1A11C342D375}.NuGet|Any CPU.ActiveCfg = Release|Any CPU
-		{2784C4AF-3B96-471B-91B0-1A11C342D375}.NuGet|Any CPU.Build.0 = Release|Any CPU
-		{2784C4AF-3B96-471B-91B0-1A11C342D375}.NuGet|x86.ActiveCfg = Release|Any CPU
-		{2784C4AF-3B96-471B-91B0-1A11C342D375}.NuGet|x86.Build.0 = Release|Any CPU
-		{2784C4AF-3B96-471B-91B0-1A11C342D375}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{2784C4AF-3B96-471B-91B0-1A11C342D375}.Release|Any CPU.Build.0 = Release|Any CPU
-		{2784C4AF-3B96-471B-91B0-1A11C342D375}.Release|x86.ActiveCfg = Release|Any CPU
-		{2784C4AF-3B96-471B-91B0-1A11C342D375}.Release|x86.Build.0 = Release|Any CPU
 		{67336499-3A38-4D2C-A117-6389EBBF3710}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{67336499-3A38-4D2C-A117-6389EBBF3710}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{67336499-3A38-4D2C-A117-6389EBBF3710}.Debug|x86.ActiveCfg = Debug|Any CPU
@@ -85,15 +69,6 @@ Global
 		{40123E6B-596D-455A-94F6-95757C8E7DE5}.Release|Any CPU.Build.0 = Release|Any CPU
 		{40123E6B-596D-455A-94F6-95757C8E7DE5}.Release|x86.ActiveCfg = Release|Any CPU
 		{40123E6B-596D-455A-94F6-95757C8E7DE5}.Release|x86.Build.0 = Release|Any CPU
-		{236485C2-A7BA-4DCD-808A-B3A634764402}.Debug|Any CPU.ActiveCfg = Debug|x86
-		{236485C2-A7BA-4DCD-808A-B3A634764402}.Debug|x86.ActiveCfg = Debug|x86
-		{236485C2-A7BA-4DCD-808A-B3A634764402}.Debug|x86.Build.0 = Debug|x86
-		{236485C2-A7BA-4DCD-808A-B3A634764402}.NuGet|Any CPU.ActiveCfg = NuGet|x86
-		{236485C2-A7BA-4DCD-808A-B3A634764402}.NuGet|x86.ActiveCfg = NuGet|x86
-		{236485C2-A7BA-4DCD-808A-B3A634764402}.NuGet|x86.Build.0 = NuGet|x86
-		{236485C2-A7BA-4DCD-808A-B3A634764402}.Release|Any CPU.ActiveCfg = Release|x86
-		{236485C2-A7BA-4DCD-808A-B3A634764402}.Release|x86.ActiveCfg = Release|x86
-		{236485C2-A7BA-4DCD-808A-B3A634764402}.Release|x86.Build.0 = Release|x86
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
